@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>یادگیری سوئدی - سطح متوسط</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        
+        .ltr-text {
+            direction: ltr;
+            text-align: left;
+        }
+        
+        /* RTL adjustments for Tailwind */
+        [dir="rtl"] .text-left {
+            text-align: right;
+        }
+        
+        [dir="rtl"] .text-right {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const DAILY_GOAL = 20; // 20 items per day for 30 min session
+
+        // Content Database
+        const contentDatabase = [
+            // === LEVEL 3: INTERMEDIATE - Grammar & Complex Sentences ===
+            {
+                id: 1,
+                type: "complex_sentence",
+                level: 3,
+                category: "Grammar",
+                topic: "ساختار جمله",
+                swedish: "Jag undrar om du har sett filmen som alla pratar om.",
+                farsi: "من نمی‌دانم آیا تو آن فیلمی را که همه درباره‌اش صحبت می‌کنند دیده‌ای.",
+                grammar_note: "جملات فرعی با 'om' و 'som': ترتیب کلمات در جمله فرعی تغییر نمی‌کند (فعل بعد از فاعل)",
+                difficulty: "متوسط"
+            },
+            {
+                id: 2,
+                type: "complex_sentence",
+                level: 3,
+                category: "Grammar",
+                topic: "ساختار جمله",
+                swedish: "När jag var ung brukade jag simma varje dag.",
+                farsi: "وقتی جوان بودم، هر روز شنا می‌کردم.",
+                grammar_note: "زمان گذشته عادتی با 'brukade' + فعل مصدری. 'När' در ابتدای جمله باعث وارونگی می‌شود",
+                difficulty: "متوسط"
+            },
+            {
+                id: 3,
+                type: "complex_sentence",
+                level: 3,
+                category: "Grammar",
+                topic: "افعال رفلکسیو",
+                swedish: "Jag måste skynda mig för att hinna med bussen.",
+                farsi: "باید عجله کنم تا به اتوبوس برسم.",
+                grammar_note: "افعال رفلکسیو: 'skynda sig' (عجله کردن). ضمیر رفلکسیو بعد از فعل می‌آید",
+                difficulty: "متوسط"
+            },
+            {
+                id: 4,
+                type: "vocabulary",
+                level: 3,
+                category: "Work",
+                topic: "محیط کار",
+                swedish: "möte",
+                farsi: "جلسه",
+                example: "Vi har ett viktigt möte klockan tre.",
+                example_farsi: "ما یک جلسه مهم ساعت سه داریم.",
+                related_words: ["presentation - ارائه", "förhandling - مذاکره", "deadline - ضرب‌الاجل"]
+            },
+            {
+                id: 5,
+                type: "vocabulary",
+                level: 3,
+                category: "Work",
+                topic: "محیط کار",
+                swedish: "anställd",
+                farsi: "کارمند",
+                example: "Företaget har över hundra anställda.",
+                example_farsi: "شرکت بیش از صد کارمند دارد.",
+                related_words: ["chef - مدیر", "kollega - همکار", "arbetsgivare - کارفرما"]
+            },
+            {
+                id: 6,
+                type: "conversation",
+                level: 3,
+                category: "Social",
+                topic: "گفتگوی اجتماعی",
+                title: "På ett kafé",
+                title_farsi: "در یک کافه",
+                lines: [
+                    { swedish: "- Hej! Länge sedan vi sågs.", farsi: "- سلام! خیلی وقت است ندیده‌ایمت." },
+                    { swedish: "- Ja, det var på Annas fest, eller hur?", farsi: "- بله، در مهمانی آنا بود، درست است؟" },
+                    { swedish: "- Precis! Hur har du haft det?", farsi: "- دقیقا! چطور بوده‌ای؟" },
+                    { swedish: "- Jättebra! Jag har bytt jobb faktiskt.", farsi: "- خیلی خوب! راستش من شغلم را عوض کرده‌ام." },
+                    { swedish: "- Åh, grattis! Vad gör du nu då?", farsi: "- اوه، تبریک! حالا چه کار می‌کنی؟" }
+                ]
+            },
+            {
+                id: 7,
+                type: "grammar_drill",
+                level: 3,
+                category: "Grammar",
+                topic: "حروف اضافه",
+                question: "Jag bor ___ Stockholm ___ fem år.",
+                farsi_question: "من ___ استکهلم ___ پنج سال زندگی می‌کنم.",
+                options: [
+                    { text: "i / sedan", correct: true },
+                    { text: "på / sedan", correct: false },
+                    { text: "i / för", correct: false },
+                    { text: "på / för", correct: false }
+                ],
+                explanation: "'i' برای شهرها و 'sedan' برای مدت زمان از گذشته تا حال استفاده می‌شود"
+            },
+            {
+                id: 8,
+                type: "idiom",
+                level: 3,
+                category: "Expressions",
+                topic: "اصطلاحات رایج",
+                swedish: "Det är ingen ko på isen.",
+                farsi: "گاوی روی یخ نیست.",
+                meaning: "نگران نباش / مشکلی نیست",
+                example: "- Jag är orolig för provet! - Det är ingen ko på isen, du kommer klara det.",
+                example_farsi: "- من نگران امتحان هستم! - نگران نباش، موفق خواهی شد."
+            },
+
+            // === LEVEL 4: UPPER INTERMEDIATE ===
+            {
+                id: 9,
+                type: "complex_sentence",
+                level: 4,
+                category: "Grammar",
+                topic: "جملات شرطی",
+                swedish: "Om jag hade vetat det skulle jag ha kommit tidigare.",
+                farsi: "اگر می‌دانستم، زودتر می‌آمدم.",
+                grammar_note: "شرط گذشته نارئال: 'hade' + supinum برای گذشته، 'skulle ha' + supinum برای نتیجه",
+                difficulty: "پیشرفته"
+            },
+            {
+                id: 10,
+                type: "complex_sentence",
+                level: 4,
+                category: "Grammar",
+                topic: "صفات و قیدها",
+                swedish: "Det är viktigt att man tar det lugnt och inte stressar.",
+                farsi: "مهم است که آدم آرام باشد و استرس نگیرد.",
+                grammar_note: "ساختار 'det är + صفت + att': فاعل عمومی 'man' برای اشاره به افراد به طور کلی",
+                difficulty: "پیشرفته"
+            },
+            {
+                id: 11,
+                type: "vocabulary",
+                level: 4,
+                category: "Abstract",
+                topic: "مفاهیم انتزاعی",
+                swedish: "uppfattning",
+                farsi: "درک، برداشت",
+                example: "Min uppfattning är att han hade rätt.",
+                example_farsi: "برداشت من این است که او حق داشت.",
+                related_words: ["åsikt - نظر", "inställning - دیدگاه", "perspektiv - منظر"]
+            },
+            {
+                id: 12,
+                type: "vocabulary",
+                level: 4,
+                category: "Work",
+                topic: "کار حرفه‌ای",
+                swedish: "förberedelse",
+                farsi: "آماده‌سازی",
+                example: "Förberedelserna inför mötet tog hela dagen.",
+                example_farsi: "آماده‌سازی‌ها برای جلسه تمام روز طول کشید.",
+                related_words: ["planering - برنامه‌ریزی", "genomförande - اجرا", "uppföljning - پیگیری"]
+            },
+            {
+                id: 13,
+                type: "conversation",
+                level: 4,
+                category: "Professional",
+                topic: "محیط کار",
+                title: "Presentera en idé",
+                title_farsi: "ارائه یک ایده",
+                lines: [
+                    { swedish: "- Jag skulle vilja lägga fram ett förslag.", farsi: "- می‌خواهم یک پیشنهاد ارائه دهم." },
+                    { swedish: "- Varsågod, vi lyssnar.", farsi: "- بفرمایید، گوش می‌کنیم." },
+                    { swedish: "- Jag tycker vi borde investera mer i digital marknadsföring.", farsi: "- فکر می‌کنم باید بیشتر روی بازاریابی دیجیتال سرمایه‌گذاری کنیم." },
+                    { swedish: "- Intressant. Kan du utveckla det lite mer?", farsi: "- جالب است. می‌توانید بیشتر توضیح دهید؟" },
+                    { swedish: "- Självklart. Enligt senaste statistiken...", farsi: "- البته. طبق آخرین آمارها..." }
+                ]
+            },
+            {
+                id: 14,
+                type: "grammar_drill",
+                level: 4,
+                category: "Grammar",
+                topic: "زمان‌های فعل",
+                question: "När jag kom hem ___ barnen redan ___ .",
+                farsi_question: "وقتی به خانه رسیدم، بچه‌ها قبلا ___ .",
+                options: [
+                    { text: "hade / somnat", correct: true },
+                    { text: "har / somnat", correct: false },
+                    { text: "skulle / somna", correct: false },
+                    { text: "var / somnade", correct: false }
+                ],
+                explanation: "زمان ماقبل گذشته (pluskvamperfekt): 'hade' + supinum برای اتفاقی که قبل از گذشته رخ داده"
+            },
+            {
+                id: 15,
+                type: "idiom",
+                level: 4,
+                category: "Expressions",
+                topic: "اصطلاحات",
+                swedish: "Att ha rent mjöl i påsen.",
+                farsi: "آرد تمیز در کیسه داشتن.",
+                meaning: "وجدان پاک داشتن / کار خلافی انجام نداده باشی",
+                example: "Du behöver inte oroa dig om du har rent mjöl i påsen.",
+                example_farsi: "اگر وجدان پاکی داری نیازی به نگرانی نیست."
+            },
+
+            // === LEVEL 5: ADVANCED ===
+            {
+                id: 16,
+                type: "complex_sentence",
+                level: 5,
+                category: "Grammar",
+                topic: "ساختارهای پیچیده",
+                swedish: "Trots att vädret var dåligt bestämde vi oss för att gå ut och promenera.",
+                farsi: "با وجود اینکه هوا بد بود، تصمیم گرفتیم بیرون برویم و قدم بزنیم.",
+                grammar_note: "'Trots att' = با وجود اینکه. جمله فرعی ترتیب عادی، جمله اصلی وارونگی دارد",
+                difficulty: "پیشرفته"
+            },
+            {
+                id: 17,
+                type: "complex_sentence",
+                level: 5,
+                category: "Grammar",
+                topic: "مجهول",
+                swedish: "Projektet planerades noggrant men genomfördes tyvärr aldrig.",
+                farsi: "پروژه با دقت برنامه‌ریزی شد اما متاسفانه هرگز اجرا نشد.",
+                grammar_note: "مجهول با 's': فعل + s. معمولاً برای جملات رسمی و نوشتاری استفاده می‌شود",
+                difficulty: "پیشرفته"
+            },
+            {
+                id: 18,
+                type: "vocabulary",
+                level: 5,
+                category: "Abstract",
+                topic: "مفاهیم فلسفی",
+                swedish: "förverkliga",
+                farsi: "عملی کردن، تحقق بخشیدن",
+                example: "Hon lyckades förverkliga sina drömmar.",
+                example_farsi: "او موفق شد رویاهایش را عملی کند.",
+                related_words: ["uppnå - دست یافتن", "åstadkomma - انجام دادن", "realisera - تحقق بخشیدن"]
+            },
+            {
+                id: 19,
+                type: "conversation",
+                level: 5,
+                category: "Debate",
+                topic: "بحث و گفتگو",
+                title: "Diskutera ett ämne",
+                title_farsi: "بحث درباره یک موضوع",
+                lines: [
+                    { swedish: "- Vad tycker du om förslaget?", farsi: "- درباره پیشنهاد چه فکر می‌کنید؟" },
+                    { swedish: "- Å ena sidan ser jag fördelarna, men å andra sidan...", farsi: "- از یک طرف مزایا را می‌بینم، اما از طرف دیگر..." },
+                    { swedish: "- Jag förstår din synpunkt, men jag anser att...", farsi: "- دیدگاه شما را درک می‌کنم، اما معتقدم که..." },
+                    { swedish: "- Det är en god poäng. Däremot måste vi också ta hänsyn till...", farsi: "- نکته خوبی است. با این حال باید به... هم توجه کنیم." },
+                    { swedish: "- Absolut. Låt oss hitta en kompromiss.", farsi: "- کاملا درست. بیایید یک راه حل میانه پیدا کنیم." }
+                ]
+            },
+            {
+                id: 20,
+                type: "idiom",
+                level: 5,
+                category: "Expressions",
+                topic: "اصطلاحات پیشرفته",
+                swedish: "Att sticka ut hakan.",
+                farsi: "چانه را بیرون دادن.",
+                meaning: "جرات کردن، شجاع بودن",
+                example: "Hon vågade sticka ut hakan och säga vad hon verkligen tyckte.",
+                example_farsi: "او جرات کرد و گفت واقعا چه فکری می‌کند."
+            },
+
+            // Additional content - expanding to ~50 items for demo
+            {
+                id: 21,
+                type: "complex_sentence",
+                level: 3,
+                category: "Grammar",
+                topic: "حروف ربط",
+                swedish: "Även om det regnar ska vi åka till stranden.",
+                farsi: "حتی اگر باران ببارد، به ساحل خواهیم رفت.",
+                grammar_note: "'Även om' = حتی اگر. برای بیان شرط که بر نتیجه تاثیر نمی‌گذارد",
+                difficulty: "متوسط"
+            },
+            {
+                id: 22,
+                type: "vocabulary",
+                level: 3,
+                category: "Daily Life",
+                topic: "زندگی روزمره",
+                swedish: "handla",
+                farsi: "خرید کردن",
+                example: "Jag måste handla mat på vägen hem.",
+                example_farsi: "باید در راه خانه خرید مواد غذایی کنم.",
+                related_words: ["köpa - خریدن", "betala - پرداخت کردن", "kvitto - رسید"]
+            },
+            {
+                id: 23,
+                type: "complex_sentence",
+                level: 3,
+                category: "Grammar",
+                topic: "زمان آینده",
+                swedish: "Nästa år kommer jag att flytta till en ny stad.",
+                farsi: "سال آینده به شهر جدیدی نقل مکان خواهم کرد.",
+                grammar_note: "آینده با 'kommer att' + فعل مصدری. رسمی‌تر از 'ska'",
+                difficulty: "متوسط"
+            },
+            {
+                id: 24,
+                type: "vocabulary",
+                level: 4,
+                category: "Emotions",
+                topic: "احساسات",
+                swedish: "besviken",
+                farsi: "ناامید",
+                example: "Jag blev väldigt besviken när jag hörde nyheten.",
+                example_farsi: "وقتی خبر را شنیدم خیلی ناامید شدم.",
+                related_words: ["ledsen - غمگین", "arg - عصبانی", "glad - خوشحال"]
+            },
+            {
+                id: 25,
+                type: "conversation",
+                level: 3,
+                category: "Healthcare",
+                topic: "بهداشت و درمان",
+                title: "På vårdcentralen",
+                title_farsi: "در مرکز بهداشت",
+                lines: [
+                    { swedish: "- Jag har ont i halsen sedan några dagar.", farsi: "- چند روزه گلویم درد می‌کند." },
+                    { swedish: "- Har du feber också?", farsi: "- تب هم دارید؟" },
+                    { swedish: "- Ja, lite grann. Omkring 38 grader.", farsi: "- بله، کمی. حدود 38 درجه." },
+                    { swedish: "- Jag ska undersöka dig. Säg 'aaa'.", farsi: "- می‌خواهم معاینه‌تان کنم. 'آ' بگویید." },
+                    { swedish: "- Aaa...", farsi: "- آآآ..." }
+                ]
+            },
+            {
+                id: 26,
+                type: "grammar_drill",
+                level: 3,
+                category: "Grammar",
+                topic: "افعال مدال",
+                question: "Du ___ inte röka här inne.",
+                farsi_question: "شما ___ اینجا سیگار بکشید.",
+                options: [
+                    { text: "får", correct: true },
+                    { text: "kan", correct: false },
+                    { text: "ska", correct: false },
+                    { text: "vill", correct: false }
+                ],
+                explanation: "'får inte' = اجازه نداشتن / ممنوع بودن"
+            },
+            {
+                id: 27,
+                type: "complex_sentence",
+                level: 4,
+                category: "Grammar",
+                topic: "جملات مقایسه‌ای",
+                swedish: "Ju mer jag lär mig svenska, desto lättare blir det.",
+                farsi: "هر چه بیشتر سوئدی یاد بگیرم، آسان‌تر می‌شود.",
+                grammar_note: "ساختار 'ju... desto': هر چه... به همان اندازه... برای مقایسه همزمان",
+                difficulty: "پیشرفته"
+            },
+            {
+                id: 28,
+                type: "vocabulary",
+                level: 4,
+                category: "Society",
+                topic: "جامعه",
+                swedish: "samhälle",
+                farsi: "جامعه",
+                example: "Vi lever i ett mångkulturellt samhälle.",
+                example_farsi: "ما در یک جامعه چندفرهنگی زندگی می‌کنیم.",
+                related_words: ["kultur - فرهنگ", "tradition - سنت", "värderingar - ارزش‌ها"]
+            },
+            {
+                id: 29,
+                type: "idiom",
+                level: 3,
+                category: "Expressions",
+                topic: "اصطلاحات",
+                swedish: "Bättre sent än aldrig.",
+                farsi: "دیر رسیدن بهتر از هرگز نرسیدن است.",
+                meaning: "دیر بهتر از هیچ است",
+                example: "Du kom sent, men bättre sent än aldrig!",
+                example_farsi: "دیر آمدی، اما دیر بهتر از هیچ است!"
+            },
+            {
+                id: 30,
+                type: "conversation",
+                level: 4,
+                category: "Social",
+                topic: "مکالمات اجتماعی",
+                title: "Bjuda på middag",
+                title_farsi: "دعوت به شام",
+                lines: [
+                    { swedish: "- Vad roligt att du kunde komma!", farsi: "- چه خوب که توانستید بیایید!" },
+                    { swedish: "- Tack för inbjudan! Det luktar underbart.", farsi: "- متشکرم برای دعوت! بوی فوق‌العاده‌ای می‌دهد." },
+                    { swedish: "- Jag har lagat en traditionell svensk rätt.", farsi: "- یک غذای سنتی سوئدی درست کرده‌ام." },
+                    { swedish: "- Jag ser fram emot att smaka!", farsi: "- مشتاق چشیدن آن هستم!" },
+                    { swedish: "- Varsågod och sitt ner.", farsi: "- بفرمایید، لطفا بنشینید." }
+                ]
+            }
+        ];
+
+        function SwedishFarsiApp() {
+            const [cards, setCards] = useState([]);
+            const [currentCard, setCurrentCard] = useState(null);
+            const [showAnswer, setShowAnswer] = useState(false);
+            const [stats, setStats] = useState({
+                totalReviewed: 0,
+                todayReviewed: 0,
+                sessionReviewed: 0,
+                lastStudyDate: new Date().toISOString().split('T')[0]
+            });
+            const [view, setView] = useState('welcome');
+            const [selectedTopic, setSelectedTopic] = useState('all');
+            const [selectedLevel, setSelectedLevel] = useState('all');
+
+            // Initialize
+            useEffect(() => {
+                const savedCards = localStorage.getItem('swedishFarsiCards');
+                const savedStats = localStorage.getItem('swedishFarsiStats');
+
+                if (savedCards) {
+                    const parsed = JSON.parse(savedCards);
+                    parsed.forEach(card => {
+                        card.nextReview = new Date(card.nextReview);
+                    });
+                    setCards(parsed);
+                } else {
+                    const initialized = contentDatabase.map(item => ({
+                        ...item,
+                        nextReview: new Date(),
+                        interval: 0,
+                        easeFactor: 2.5,
+                        repetitions: 0,
+                        isNew: true
+                    }));
+                    setCards(initialized);
+                    localStorage.setItem('swedishFarsiCards', JSON.stringify(initialized));
+                }
+
+                if (savedStats) {
+                    const parsedStats = JSON.parse(savedStats);
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    if (parsedStats.lastStudyDate !== today) {
+                        parsedStats.todayReviewed = 0;
+                        parsedStats.sessionReviewed = 0;
+                        parsedStats.lastStudyDate = today;
+                    }
+                    setStats(parsedStats);
+                }
+            }, []);
+
+            useEffect(() => {
+                if (cards.length > 0) {
+                    localStorage.setItem('swedishFarsiCards', JSON.stringify(cards));
+                }
+            }, [cards]);
+
+            useEffect(() => {
+                localStorage.setItem('swedishFarsiStats', JSON.stringify(stats));
+            }, [stats]);
+
+            const getDueCards = () => {
+                const now = new Date();
+                let filtered = cards.filter(card => card.nextReview <= now && !card.isNew);
+                
+                if (selectedTopic !== 'all') {
+                    filtered = filtered.filter(card => card.topic === selectedTopic);
+                }
+                if (selectedLevel !== 'all') {
+                    filtered = filtered.filter(card => card.level === parseInt(selectedLevel));
+                }
+                
+                return filtered;
+            };
+
+            const getNewCards = () => {
+                let filtered = cards.filter(card => card.isNew);
+                
+                if (selectedTopic !== 'all') {
+                    filtered = filtered.filter(card => card.topic === selectedTopic);
+                }
+                if (selectedLevel !== 'all') {
+                    filtered = filtered.filter(card => card.level === parseInt(selectedLevel));
+                }
+                
+                return filtered.slice(0, 5);
+            };
+
+            const calculateNextReview = (card, quality) => {
+                let interval = card.interval;
+                let easeFactor = card.easeFactor;
+                let repetitions = card.repetitions;
+
+                if (quality >= 3) {
+                    if (repetitions === 0) {
+                        interval = 1;
+                    } else if (repetitions === 1) {
+                        interval = 6;
+                    } else {
+                        interval = Math.round(interval * easeFactor);
+                    }
+                    repetitions += 1;
+                } else {
+                    repetitions = 0;
+                    interval = 1;
+                }
+
+                easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+                easeFactor = Math.max(1.3, easeFactor);
+
+                const nextReview = new Date();
+                nextReview.setDate(nextReview.getDate() + interval);
+
+                return { interval, easeFactor, repetitions, nextReview, isNew: false };
+            };
+
+            const speakSwedish = (text, slow = false) => {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'sv-SE';
+                    utterance.rate = slow ? 0.5 : 0.9;
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(utterance);
+                }
+            };
+
+            const startReview = () => {
+                const dueCards = getDueCards();
+                const newCards = getNewCards();
+                const remaining = DAILY_GOAL - stats.sessionReviewed;
+                const availableCards = [...dueCards, ...newCards].slice(0, remaining);
+
+                if (availableCards.length > 0) {
+                    setCurrentCard(availableCards[0]);
+                    setShowAnswer(false);
+                    setView('review');
+                }
+            };
+
+            const handleRating = (difficulty) => {
+                if (!currentCard) return;
+
+                const qualityMap = { 'hard': 2, 'medium': 3, 'easy': 5 };
+                const quality = qualityMap[difficulty];
+                const updates = calculateNextReview(currentCard, quality);
+
+                setCards(prevCards =>
+                    prevCards.map(card =>
+                        card.id === currentCard.id ? { ...card, ...updates } : card
+                    )
+                );
+
+                setStats(prev => ({
+                    ...prev,
+                    totalReviewed: prev.totalReviewed + 1,
+                    todayReviewed: prev.todayReviewed + 1,
+                    sessionReviewed: prev.sessionReviewed + 1
+                }));
+
+                const dueCards = getDueCards();
+                const newCards = getNewCards();
+                const remaining = DAILY_GOAL - stats.sessionReviewed - 1;
+                const availableCards = [...dueCards, ...newCards]
+                    .filter(c => c.id !== currentCard.id)
+                    .slice(0, remaining);
+
+                if (availableCards.length > 0 && stats.sessionReviewed < DAILY_GOAL) {
+                    setCurrentCard(availableCards[0]);
+                    setShowAnswer(false);
+                } else {
+                    setCurrentCard(null);
+                    setView('completed');
+                }
+            };
+
+            const renderCard = () => {
+                if (!currentCard) return null;
+
+                const { type } = currentCard;
+
+                if (type === 'complex_sentence') {
+                    return (
+                        <div className="space-y-6">
+                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 text-white">
+                                <div className="text-sm opacity-80 mb-2">جمله سوئدی:</div>
+                                <div className="text-2xl font-bold ltr-text mb-6">{currentCard.swedish}</div>
+                                
+                                {showAnswer && (
+                                    <>
+                                        <div className="border-t border-white/30 my-4"></div>
+                                        <div className="text-sm opacity-80 mb-2">ترجمه فارسی:</div>
+                                        <div className="text-xl mb-4">{currentCard.farsi}</div>
+                                        
+                                        <div className="bg-white/10 rounded-lg p-4 mt-4">
+                                            <div className="text-sm font-semibold mb-2">📚 نکته گرامری:</div>
+                                            <div className="text-sm">{currentCard.grammar_note}</div>
+                                        </div>
+                                        
+                                        <div className="flex gap-3 justify-center mt-6">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    speakSwedish(currentCard.swedish, false);
+                                                }}
+                                                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition"
+                                            >
+                                                🔊 سرعت عادی
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    speakSwedish(currentCard.swedish, true);
+                                                }}
+                                                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition"
+                                            >
+                                                🔊 آهسته
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            
+                            {!showAnswer && (
+                                <button
+                                    onClick={() => setShowAnswer(true)}
+                                    className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+                                >
+                                    نمایش ترجمه و توضیحات
+                                </button>
+                            )}
+                        </div>
+                    );
+                }
+
+                if (type === 'vocabulary') {
+                    return (
+                        <div className="space-y-6">
+                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-8 text-white">
+                                <div className="text-sm opacity-80 mb-2">واژه سوئدی:</div>
+                                <div className="text-3xl font-bold ltr-text mb-6">{currentCard.swedish}</div>
+                                
+                                {showAnswer && (
+                                    <>
+                                        <div className="border-t border-white/30 my-4"></div>
+                                        <div className="text-sm opacity-80 mb-2">معنی فارسی:</div>
+                                        <div className="text-2xl mb-6">{currentCard.farsi}</div>
+                                        
+                                        <div className="bg-white/10 rounded-lg p-4 mb-4">
+                                            <div className="text-sm font-semibold mb-2">مثال:</div>
+                                            <div className="ltr-text mb-2">{currentCard.example}</div>
+                                            <div className="text-sm opacity-90">{currentCard.example_farsi}</div>
+                                        </div>
+                                        
+                                        <div className="bg-white/10 rounded-lg p-4">
+                                            <div className="text-sm font-semibold mb-2">کلمات مرتبط:</div>
+                                            {currentCard.related_words.map((word, idx) => (
+                                                <div key={idx} className="text-sm opacity-90">{word}</div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            
+                            {!showAnswer && (
+                                <button
+                                    onClick={() => setShowAnswer(true)}
+                                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
+                                >
+                                    نمایش معنی و مثال‌ها
+                                </button>
+                            )}
+                        </div>
+                    );
+                }
+
+                if (type === 'conversation') {
+                    return (
+                        <div className="space-y-6">
+                            <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-8 text-white">
+                                <div className="text-xl font-bold mb-2">{currentCard.title_farsi}</div>
+                                <div className="text-sm opacity-80 ltr-text mb-6">{currentCard.title}</div>
+                                
+                                <div className="space-y-3">
+                                    {currentCard.lines.map((line, idx) => (
+                                        <div key={idx} className="bg-white/10 rounded-lg p-3">
+                                            <div className="ltr-text font-semibold mb-1">{line.swedish}</div>
+                                            {showAnswer && <div className="text-sm opacity-90">{line.farsi}</div>}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            {!showAnswer && (
+                                <button
+                                    onClick={() => setShowAnswer(true)}
+                                    className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+                                >
+                                    نمایش ترجمه‌ها
+                                </button>
+                            )}
+                        </div>
+                    );
+                }
+
+                if (type === 'grammar_drill') {
+                    return (
+                        <div className="space-y-6">
+                            <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-8 text-white">
+                                <div className="text-lg font-bold mb-4">تمرین گرامر</div>
+                                <div className="ltr-text text-xl mb-4">{currentCard.question}</div>
+                                <div className="text-sm opacity-90 mb-6">{currentCard.farsi_question}</div>
+                                
+                                {!showAnswer ? (
+                                    <div className="space-y-2">
+                                        {currentCard.options.map((option, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => setShowAnswer(true)}
+                                                className="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg transition text-right px-4"
+                                            >
+                                                {option.text}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {currentCard.options.map((option, idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`py-3 px-4 rounded-lg ${
+                                                    option.correct ? 'bg-green-500' : 'bg-white/20'
+                                                }`}
+                                            >
+                                                {option.text} {option.correct && '✓'}
+                                            </div>
+                                        ))}
+                                        <div className="bg-white/10 rounded-lg p-4 mt-4">
+                                            <div className="text-sm font-semibold mb-2">توضیح:</div>
+                                            <div className="text-sm">{currentCard.explanation}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (type === 'idiom') {
+                    return (
+                        <div className="space-y-6">
+                            <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-8 text-white">
+                                <div className="text-sm opacity-80 mb-2">اصطلاح سوئدی:</div>
+                                <div className="text-2xl font-bold ltr-text mb-6">{currentCard.swedish}</div>
+                                
+                                {showAnswer && (
+                                    <>
+                                        <div className="border-t border-white/30 my-4"></div>
+                                        <div className="text-sm opacity-80 mb-2">ترجمه تحت‌اللفظی:</div>
+                                        <div className="text-xl mb-4">{currentCard.farsi}</div>
+                                        
+                                        <div className="bg-white/10 rounded-lg p-4 mb-4">
+                                            <div className="text-sm font-semibold mb-2">معنی واقعی:</div>
+                                            <div className="text-lg">{currentCard.meaning}</div>
+                                        </div>
+                                        
+                                        <div className="bg-white/10 rounded-lg p-4">
+                                            <div className="text-sm font-semibold mb-2">مثال:</div>
+                                            <div className="ltr-text mb-2">{currentCard.example}</div>
+                                            <div className="text-sm opacity-90">{currentCard.example_farsi}</div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            
+                            {!showAnswer && (
+                                <button
+                                    onClick={() => setShowAnswer(true)}
+                                    className="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition"
+                                >
+                                    نمایش معنی و مثال
+                                </button>
+                            )}
+                        </div>
+                    );
+                }
+            };
+
+            const dueCount = getDueCards().length;
+            const newCount = getNewCards().length;
+
+            if (view === 'welcome' || view === 'completed') {
+                const isCompleted = view === 'completed';
+                const totalDue = dueCount + newCount;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h1 className="text-3xl font-bold text-gray-800">🇸🇪 یادگیری سوئدی</h1>
+                                        <p className="text-gray-600 mt-1">سطح متوسط به پیشرفته</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setView('stats')}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                    >
+                                        📊 آمار پیشرفت
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4 mb-4">
+                                    <div className="bg-blue-50 rounded-lg p-4 text-center">
+                                        <div className="text-2xl font-bold text-blue-600">{dueCount}</div>
+                                        <div className="text-sm text-gray-600">کارت‌های آماده</div>
+                                    </div>
+                                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                                        <div className="text-2xl font-bold text-green-600">{newCount}</div>
+                                        <div className="text-sm text-gray-600">کارت‌های جدید</div>
+                                    </div>
+                                    <div className="bg-purple-50 rounded-lg p-4 text-center">
+                                        <div className="text-2xl font-bold text-purple-600">
+                                            {stats.sessionReviewed}/{DAILY_GOAL}
+                                        </div>
+                                        <div className="text-sm text-gray-600">امروز</div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-lg p-4">
+                                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span>پیشرفت روزانه</span>
+                                        <span>{Math.round((stats.sessionReviewed / DAILY_GOAL) * 100)}%</span>
+                                    </div>
+                                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-indigo-400 to-purple-600 transition-all"
+                                            style={{ width: `${Math.min((stats.sessionReviewed / DAILY_GOAL) * 100, 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+                                <div className="text-6xl mb-4">{isCompleted ? '🎉' : '🇸🇪'}</div>
+                                <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                                    {isCompleted ? 'تمرین امروز تمام شد!' : 'خوش آمدید!'}
+                                </h2>
+                                <p className="text-gray-600 mb-6">
+                                    {isCompleted
+                                        ? `امروز ${stats.sessionReviewed} کارت را مرور کردید. عالی بود!`
+                                        : totalDue > 0
+                                            ? `${totalDue} کارت آماده مرور است.`
+                                            : 'تمام کارت‌های امروز را مرور کرده‌اید!'}
+                                </p>
+                                {totalDue > 0 && (
+                                    <button
+                                        onClick={startReview}
+                                        className="px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition text-lg font-bold"
+                                    >
+                                        ▶ شروع تمرین
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (view === 'stats') {
+                const mastered = cards.filter(c => !c.isNew && c.repetitions >= 3).length;
+                const started = cards.filter(c => !c.isNew).length;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-8">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h1 className="text-3xl font-bold text-gray-800">📈 پیشرفت شما</h1>
+                                    <button
+                                        onClick={() => setView('welcome')}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                    >
+                                        ← بازگشت
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4 mb-8">
+                                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white text-center">
+                                        <div className="text-4xl font-bold mb-2">{stats.totalReviewed}</div>
+                                        <div className="text-blue-100">کل مرور شده</div>
+                                    </div>
+
+                                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white text-center">
+                                        <div className="text-4xl font-bold mb-2">{stats.todayReviewed}</div>
+                                        <div className="text-green-100">امروز</div>
+                                    </div>
+
+                                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white text-center">
+                                        <div className="text-4xl font-bold mb-2">{dueCount + newCount}</div>
+                                        <div className="text-purple-100">باقیمانده</div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-xl p-6">
+                                    <h3 className="text-xl font-semibold mb-4 text-gray-800">سطح یادگیری</h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                                <span>کارت‌های تسلط یافته</span>
+                                                <span>{mastered} / {cards.length}</span>
+                                            </div>
+                                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-green-400 to-green-600"
+                                                    style={{ width: `${(mastered / cards.length) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                                <span>کارت‌های شروع شده</span>
+                                                <span>{started} / {cards.length}</span>
+                                            </div>
+                                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-blue-400 to-blue-600"
+                                                    style={{ width: `${(started / cards.length) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (view === 'review' && currentCard) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-800">🇸🇪 یادگیری سوئدی</h1>
+                                        <div className="text-sm text-gray-600 mt-1">
+                                            سطح {currentCard.level} • {currentCard.topic}
+                                        </div>
+                                    </div>
+                                    <div className="text-indigo-600 font-semibold">
+                                        {stats.sessionReviewed}/{DAILY_GOAL}
+                                    </div>
+                                </div>
+                                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-indigo-600 transition-all"
+                                        style={{ width: `${(stats.sessionReviewed / DAILY_GOAL) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-8">
+                                {renderCard()}
+
+                                {showAnswer && (
+                                    <div className="mt-8">
+                                        <div className="text-center text-gray-600 mb-4 font-medium">
+                                            چقدر این مورد را می‌دانستید؟
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <button
+                                                onClick={() => handleRating('hard')}
+                                                className="bg-red-50 hover:bg-red-100 text-red-700 py-4 rounded-xl font-semibold transition"
+                                            >
+                                                سخت
+                                                <div className="text-xs text-red-600 mt-1">مرور زود</div>
+                                            </button>
+                                            <button
+                                                onClick={() => handleRating('medium')}
+                                                className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 py-4 rounded-xl font-semibold transition"
+                                            >
+                                                متوسط
+                                                <div className="text-xs text-yellow-600 mt-1">مرور در چند روز</div>
+                                            </button>
+                                            <button
+                                                onClick={() => handleRating('easy')}
+                                                className="bg-green-50 hover:bg-green-100 text-green-700 py-4 rounded-xl font-semibold transition"
+                                            >
+                                                آسان
+                                                <div className="text-xs text-green-600 mt-1">مرور بعد</div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        }
+
+        ReactDOM.render(<SwedishFarsiApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
