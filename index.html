@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>یادگیری سوئدی - سطح متوسط</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        
+        .ltr-text {
+            direction: ltr;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const DAILY_GOAL = 25;
+
+        // 200 EVERYDAY SPEAKING PATTERNS
+        const contentDatabase = [
+            // === DAILY ROUTINES & TIME (20 items) ===
+            {id: 1, type: "sentence", level: 3, category: "Daily", farsi: "من معمولا ساعت هفت بیدار می‌شوم.", swedish: "Jag brukar vakna klockan sju.", grammar: "brukar + فعل مصدری = معمولا انجام دادن (عادت)", pattern: "Jag brukar + فعل", words: [{s:"Jag",f:"من"},{s:"brukar",f:"معمولا"},{s:"vakna",f:"بیدار شدن"},{s:"klockan",f:"ساعت"},{s:"sju",f:"هفت"}]},
+            {id: 2, type: "sentence", level: 3, category: "Daily", farsi: "چه ساعتی به محل کار می‌روی؟", swedish: "När brukar du åka till jobbet?", grammar: "När brukar du + فعل؟ = معمولا کی...؟", pattern: "När brukar du + فعل؟", words: [{s:"När",f:"کی/چه وقت"},{s:"brukar",f:"معمولا"},{s:"du",f:"تو"},{s:"åka",f:"رفتن"},{s:"till",f:"به"},{s:"jobbet",f:"کار"}]},
+            {id: 3, type: "sentence", level: 3, category: "Daily", farsi: "من قبل از رفتن به کار صبحانه می‌خورم.", swedish: "Jag äter frukost innan jag åker till jobbet.", grammar: "innan jag + فعل = قبل از اینکه من...", pattern: "innan jag + فعل", words: [{s:"Jag",f:"من"},{s:"äter",f:"می‌خورم"},{s:"frukost",f:"صبحانه"},{s:"innan",f:"قبل از"},{s:"jag",f:"من"},{s:"åker",f:"می‌روم"},{s:"till",f:"به"},{s:"jobbet",f:"کار"}]},
+            {id: 4, type: "sentence", level: 3, category: "Daily", farsi: "بعد از کار، به خانه برمی‌گردم.", swedish: "Efter jobbet åker jag hem.", grammar: "Efter + اسم = بعد از. توجه به وارونگی فعل", pattern: "Efter + اسم، فعل + فاعل", words: [{s:"Efter",f:"بعد از"},{s:"jobbet",f:"کار"},{s:"åker",f:"می‌روم"},{s:"jag",f:"من"},{s:"hem",f:"خانه"}]},
+            {id: 5, type: "sentence", level: 3, category: "Daily", farsi: "شب‌ها معمولا ساعت یازده می‌خوابم.", swedish: "På kvällen brukar jag lägga mig klockan elva.", grammar: "lägga sig = خوابیدن (فعل رفلکسیو)", pattern: "brukar + lägga mig", words: [{s:"På kvällen",f:"شب‌ها"},{s:"brukar",f:"معمولا"},{s:"jag",f:"من"},{s:"lägga mig",f:"می‌خوابم"},{s:"klockan",f:"ساعت"},{s:"elva",f:"یازده"}]},
+            {id: 6, type: "sentence", level: 3, category: "Daily", farsi: "آخر هفته‌ها دوست دارم دیر بیدار شوم.", swedish: "På helgerna vill jag gärna sova länge.", grammar: "På helgerna = آخر هفته‌ها. sova länge = دیر بیدار شدن", pattern: "På helgerna + فعل", words: [{s:"På helgerna",f:"آخر هفته‌ها"},{s:"vill",f:"می‌خواهم"},{s:"jag",f:"من"},{s:"gärna",f:"با ذوق"},{s:"sova",f:"خوابیدن"},{s:"länge",f:"دیر/طولانی"}]},
+            {id: 7, type: "sentence", level: 3, category: "Daily", farsi: "چند بار در هفته ورزش می‌کنی؟", swedish: "Hur ofta tränar du?", grammar: "Hur ofta = چند وقت یکبار / چه مقدار", pattern: "Hur ofta + فعل + فاعل؟", words: [{s:"Hur ofta",f:"چند بار"},{s:"tränar",f:"ورزش می‌کنی"},{s:"du",f:"تو"}]},
+            {id: 8, type: "sentence", level: 3, category: "Daily", farsi: "من سه بار در هفته به باشگاه می‌روم.", swedish: "Jag går till gymmet tre gånger i veckan.", grammar: "tre gånger i veckan = سه بار در هفته", pattern: "X gånger i veckan/månaden", words: [{s:"Jag",f:"من"},{s:"går",f:"می‌روم"},{s:"till",f:"به"},{s:"gymmet",f:"باشگاه"},{s:"tre",f:"سه"},{s:"gånger",f:"بار"},{s:"i veckan",f:"در هفته"}]},
+            {id: 9, type: "sentence", level: 3, category: "Daily", farsi: "من باید ساعت هشت سر کار باشم.", swedish: "Jag måste vara på jobbet klockan åtta.", grammar: "måste + فعل مصدری = باید (الزام)", pattern: "måste + vara + مکان", words: [{s:"Jag",f:"من"},{s:"måste",f:"باید"},{s:"vara",f:"باشم"},{s:"på jobbet",f:"سر کار"},{s:"klockan",f:"ساعت"},{s:"åtta",f:"هشت"}]},
+            {id: 10, type: "sentence", level: 3, category: "Daily", farsi: "تو معمولا چقدر طول می‌کشد برسی؟", swedish: "Hur lång tid tar det för dig?", grammar: "Hur lång tid tar det = چقدر طول می‌کشد", pattern: "Hur lång tid tar det + för dig/att...", words: [{s:"Hur lång tid",f:"چقدر زمان"},{s:"tar",f:"می‌گیرد"},{s:"det",f:"آن"},{s:"för dig",f:"برای تو"}]},
+
+            // === MAKING PLANS & SUGGESTIONS (20 items) ===
+            {id: 11, type: "sentence", level: 3, category: "Plans", farsi: "امروز عصر وقت داری؟", swedish: "Har du tid ikväll?", grammar: "Har du tid = وقت داری؟ ikväll = امشب/عصر امروز", pattern: "Har du tid + زمان؟", words: [{s:"Har",f:"داری"},{s:"du",f:"تو"},{s:"tid",f:"وقت"},{s:"ikväll",f:"امشب"}]},
+            {id: 12, type: "sentence", level: 3, category: "Plans", farsi: "می‌خوای بریم یه قهوه بخوریم؟", swedish: "Vill du ta en fika?", grammar: "ta en fika = قهوه خوردن (سوئدی محاوره‌ای)", pattern: "Vill du + فعل؟", words: [{s:"Vill",f:"می‌خواهی"},{s:"du",f:"تو"},{s:"ta",f:"خوردن"},{s:"en fika",f:"یک قهوه"}]},
+            {id: 13, type: "sentence", level: 3, category: "Plans", farsi: "چطوره اگه آخر هفته همو ببینیم؟", swedish: "Ska vi ses i helgen?", grammar: "Ska vi + فعل = بیا... (پیشنهاد)، ses = همدیگر را دیدن", pattern: "Ska vi + فعل؟", words: [{s:"Ska",f:"باید/بیا"},{s:"vi",f:"ما"},{s:"ses",f:"ببینیم"},{s:"i helgen",f:"آخر هفته"}]},
+            {id: 14, type: "sentence", level: 3, category: "Plans", farsi: "من فردا کار دارم متاسفانه.", swedish: "Jag är upptagen imorgon tyvärr.", grammar: "upptagen = مشغول/کار داشتن", pattern: "Jag är upptagen + زمان", words: [{s:"Jag",f:"من"},{s:"är",f:"هستم"},{s:"upptagen",f:"مشغول"},{s:"imorgon",f:"فردا"},{s:"tyvärr",f:"متاسفانه"}]},
+            {id: 15, type: "sentence", level: 3, category: "Plans", farsi: "شاید یه وقت دیگه بشه.", swedish: "Kanske en annan gång.", grammar: "Kanske = شاید، en annan gång = یه بار دیگه", pattern: "Kanske + جمله", words: [{s:"Kanske",f:"شاید"},{s:"en",f:"یک"},{s:"annan",f:"دیگر"},{s:"gång",f:"بار"}]},
+            {id: 16, type: "sentence", level: 3, category: "Plans", farsi: "کدوم روز بهتره برات؟", swedish: "Vilken dag passar dig bäst?", grammar: "passar dig = مناسب تو هست، برات خوبه", pattern: "Vilken dag passar dig?", words: [{s:"Vilken",f:"کدام"},{s:"dag",f:"روز"},{s:"passar",f:"مناسب است"},{s:"dig",f:"تو"},{s:"bäst",f:"بهترین"}]},
+            {id: 17, type: "sentence", level: 3, category: "Plans", farsi: "ساعت چند بهتره ببینمت؟", swedish: "Hur dags vill du träffas?", grammar: "Hur dags = چه ساعتی، träffas = همدیگر را دیدن", pattern: "Hur dags + فعل؟", words: [{s:"Hur dags",f:"چه ساعتی"},{s:"vill",f:"می‌خواهی"},{s:"du",f:"تو"},{s:"träffas",f:"ملاقات کنیم"}]},
+            {id: 18, type: "sentence", level: 3, category: "Plans", farsi: "پس می‌بینمت جمعه ساعت سه.", swedish: "Vi ses på fredag klockan tre då.", grammar: "Vi ses = همدیگر را می‌بینیم، då = پس", pattern: "Vi ses + زمان + då", words: [{s:"Vi",f:"ما"},{s:"ses",f:"می‌بینیم"},{s:"på fredag",f:"جمعه"},{s:"klockan",f:"ساعت"},{s:"tre",f:"سه"},{s:"då",f:"پس"}]},
+            {id: 19, type: "sentence", level: 3, category: "Plans", farsi: "باشه، منتظرتم!", swedish: "Okej, jag ser fram emot det!", grammar: "ser fram emot = منتظر بودن با ذوق", pattern: "Jag ser fram emot + اسم/att...", words: [{s:"Okej",f:"باشه"},{s:"jag",f:"من"},{s:"ser fram emot",f:"منتظرم"},{s:"det",f:"آن"}]},
+            {id: 20, type: "sentence", level: 3, category: "Plans", farsi: "ببخشید ولی باید کنسل کنم.", swedish: "Förlåt men jag måste ställa in.", grammar: "ställa in = کنسل کردن، لغو کردن", pattern: "måste ställa in", words: [{s:"Förlåt",f:"ببخشید"},{s:"men",f:"ولی"},{s:"jag",f:"من"},{s:"måste",f:"باید"},{s:"ställa in",f:"کنسل کنم"}]},
+
+            // === SHOPPING & SERVICES (20 items) ===
+            {id: 21, type: "sentence", level: 3, category: "Shopping", farsi: "این چقدر قیمت داره؟", swedish: "Hur mycket kostar det här?", grammar: "Hur mycket kostar = چقدر قیمت داره", pattern: "Hur mycket kostar + اسم؟", words: [{s:"Hur mycket",f:"چقدر"},{s:"kostar",f:"قیمت دارد"},{s:"det här",f:"این"}]},
+            {id: 22, type: "sentence", level: 3, category: "Shopping", farsi: "می‌تونم امتحان کنم؟", swedish: "Kan jag prova den?", grammar: "prova = امتحان کردن، پرو کردن", pattern: "Kan jag prova + اسم؟", words: [{s:"Kan",f:"می‌توانم"},{s:"jag",f:"من"},{s:"prova",f:"امتحان کنم"},{s:"den",f:"آن"}]},
+            {id: 23, type: "sentence", level: 3, category: "Shopping", farsi: "اینو به سایز بزرگتر دارین؟", swedish: "Har ni den här i en större storlek?", grammar: "i en större storlek = به سایز بزرگتر", pattern: "Har ni + اسم + i en större/mindre storlek?", words: [{s:"Har",f:"دارید"},{s:"ni",f:"شما"},{s:"den här",f:"این"},{s:"i",f:"در"},{s:"en större",f:"یک بزرگتر"},{s:"storlek",f:"سایز"}]},
+            {id: 24, type: "sentence", level: 3, category: "Shopping", farsi: "دنبال یه کفش راحتی می‌گردم.", swedish: "Jag letar efter en bekväm sko.", grammar: "letar efter = دنبال چیزی گشتن", pattern: "Jag letar efter + اسم", words: [{s:"Jag",f:"من"},{s:"letar efter",f:"دنبال می‌گردم"},{s:"en",f:"یک"},{s:"bekväm",f:"راحت"},{s:"sko",f:"کفش"}]},
+            {id: 25, type: "sentence", level: 3, category: "Shopping", farsi: "می‌شه یه تخفیف بگیرم؟", swedish: "Kan jag få lite rabatt?", grammar: "få rabatt = تخفیف گرفتن", pattern: "Kan jag få + اسم؟", words: [{s:"Kan",f:"می‌توانم"},{s:"jag",f:"من"},{s:"få",f:"بگیرم"},{s:"lite",f:"کمی"},{s:"rabatt",f:"تخفیف"}]},
+            {id: 26, type: "sentence", level: 3, category: "Shopping", farsi: "این رو برمی‌دارم.", swedish: "Jag tar den här.", grammar: "tar = برمی‌دارم (خریدن)", pattern: "Jag tar + اسم", words: [{s:"Jag",f:"من"},{s:"tar",f:"برمی‌دارم"},{s:"den här",f:"این"}]},
+            {id: 27, type: "sentence", level: 3, category: "Shopping", farsi: "می‌تونم با کارت پرداخت کنم؟", swedish: "Kan jag betala med kort?", grammar: "betala med kort = با کارت پرداخت کردن", pattern: "Kan jag betala med + روش؟", words: [{s:"Kan",f:"می‌توانم"},{s:"jag",f:"من"},{s:"betala",f:"پرداخت کنم"},{s:"med kort",f:"با کارت"}]},
+            {id: 28, type: "sentence", level: 3, category: "Shopping", farsi: "لطفا رسیدو بهم بدید.", swedish: "Kan jag få kvittot tack.", grammar: "kvitto = رسید، få kvittot = رسید گرفتن", pattern: "Kan jag få kvittot", words: [{s:"Kan",f:"می‌توانم"},{s:"jag",f:"من"},{s:"få",f:"بگیرم"},{s:"kvittot",f:"رسید"},{s:"tack",f:"لطفا"}]},
+            {id: 29, type: "sentence", level: 3, category: "Shopping", farsi: "می‌خوام اینو پس بدم.", swedish: "Jag skulle vilja lämna tillbaka det här.", grammar: "lämna tillbaka = پس دادن", pattern: "skulle vilja lämna tillbaka", words: [{s:"Jag",f:"من"},{s:"skulle vilja",f:"می‌خواستم"},{s:"lämna tillbaka",f:"پس دهم"},{s:"det här",f:"این"}]},
+            {id: 30, type: "sentence", level: 3, category: "Shopping", farsi: "تا کی باز هستین؟", swedish: "Hur länge har ni öppet?", grammar: "har öppet = باز بودن", pattern: "Hur länge har ni öppet?", words: [{s:"Hur länge",f:"تا کی"},{s:"har",f:"دارید"},{s:"ni",f:"شما"},{s:"öppet",f:"باز"}]},
+
+            // === RESTAURANT & FOOD (20 items) ===
+            {id: 31, type: "sentence", level: 3, category: "Food", farsi: "می‌شه منو رو ببینم؟", swedish: "Kan jag få se menyn?", grammar: "få se = دیدن (درخواست مودبانه)", pattern: "Kan jag få se + اسم?"},
+            {id: 32, type: "sentence", level: 3, category: "Food", farsi: "چی پیشنهاد می‌کنید؟", swedish: "Vad rekommenderar ni?", grammar: "rekommenderar = توصیه می‌کنید", pattern: "Vad rekommenderar ni?"},
+            {id: 33, type: "sentence", level: 3, category: "Food", farsi: "من یه پیتزا سفارش می‌دم.", swedish: "Jag beställer en pizza.", grammar: "beställer = سفارش دادن", pattern: "Jag beställer + اسم"},
+            {id: 34, type: "sentence", level: 3, category: "Food", farsi: "برای نوشیدنی چی می‌خوای؟", swedish: "Vad vill du ha att dricka?", grammar: "vill ha att dricka = برای نوشیدن می‌خواهد", pattern: "Vad vill du ha att + فعل؟"},
+            {id: 35, type: "sentence", level: 3, category: "Food", farsi: "من آب معدنی می‌خورم.", swedish: "Jag tar mineralvatten.", grammar: "tar = می‌خورم/می‌گیرم (در رستوران)", pattern: "Jag tar + نوشیدنی"},
+            {id: 36, type: "sentence", level: 3, category: "Food", farsi: "این خیلی خوشمزه است!", swedish: "Det här är jättegott!", grammar: "jättegott = خیلی خوشمزه (jätte = خیلی)", pattern: "Det är jätte + صفت"},
+            {id: 37, type: "sentence", level: 3, category: "Food", farsi: "می‌شه حساب رو بیارید؟", swedish: "Kan vi få notan tack?", grammar: "notan = حساب، صورتحساب", pattern: "Kan vi få notan?"},
+            {id: 38, type: "sentence", level: 3, category: "Food", farsi: "انعام شامل حساب می‌شه؟", swedish: "Ingår dricksen?", grammar: "Ingår = شامل می‌شود، dricksمعمولا در سوئد 10-15٪", pattern: "Ingår + اسم؟"},
+            {id: 39, type: "sentence", level: 3, category: "Food", farsi: "غذا عالی بود!", swedish: "Maten var utmärkt!", grammar: "utmärkt = عالی (برای غذا)", pattern: "اسم + var utmärkt"},
+            {id: 40, type: "sentence", level: 3, category: "Food", farsi: "اینجا جای خوبیه!", swedish: "Det här är ett bra ställe!", grammar: "ställe = جا، محل", pattern: "Det är ett bra ställe"},
+
+            // === EXPRESSING OPINIONS (20 items) ===
+            {id: 41, type: "sentence", level: 4, category: "Opinion", farsi: "فکر می‌کنم این ایده خوبیه.", swedish: "Jag tycker att det är en bra idé.", grammar: "tycker att = فکر می‌کنم که (نظر شخصی)", pattern: "Jag tycker att + جمله"},
+            {id: 42, type: "sentence", level: 4, category: "Opinion", farsi: "به نظرم این کار درست نیست.", swedish: "Jag anser inte att det är rätt.", grammar: "anser = معتقدم (رسمی‌تر از tycker)", pattern: "Jag anser (inte) att + جمله"},
+            {id: 43, type: "sentence", level: 4, category: "Opinion", farsi: "نظرت درباره این چیه؟", swedish: "Vad tycker du om det här?", grammar: "tycker om = نظر داشتن درباره", pattern: "Vad tycker du om + اسم؟"},
+            {id: 44, type: "sentence", level: 4, category: "Opinion", farsi: "کاملا موافقم.", swedish: "Jag håller helt med.", grammar: "hålla med = موافق بودن", pattern: "Jag håller (helt) med"},
+            {id: 45, type: "sentence", level: 4, category: "Opinion", farsi: "متاسفانه موافق نیستم.", swedish: "Jag håller tyvärr inte med.", grammar: "håller inte med = موافق نیستم", pattern: "Jag håller inte med"},
+            {id: 46, type: "sentence", level: 4, category: "Opinion", farsi: "از یه طرف درسته، ولی...", swedish: "Å ena sidan har du rätt, men...", grammar: "Å ena sidan... å andra sidan = از یک طرف... از طرف دیگر", pattern: "Å ena sidan..., men å andra sidan..."},
+            {id: 47, type: "sentence", level: 4, category: "Opinion", farsi: "دیدگاه جالبیه.", swedish: "Det är en intressant synpunkt.", grammar: "synpunkt = دیدگاه، نظر", pattern: "Det är en intressant + اسم"},
+            {id: 48, type: "sentence", level: 4, category: "Opinion", farsi: "من با این مخالفم.", swedish: "Jag är emot det här.", grammar: "är emot = مخالف بودن", pattern: "Jag är emot + اسم"},
+            {id: 49, type: "sentence", level: 4, category: "Opinion", farsi: "حق با توئه.", swedish: "Du har rätt.", grammar: "har rätt = حق داشتن", pattern: "Du/Jag har rätt"},
+            {id: 50, type: "sentence", level: 4, category: "Opinion", farsi: "من مطمئن نیستم.", swedish: "Jag är inte säker.", grammar: "säker = مطمئن", pattern: "Jag är (inte) säker"},
+
+            // === ASKING FOR HELP (15 items) ===
+            {id: 51, type: "sentence", level: 3, category: "Help", farsi: "می‌تونی کمکم کنی؟", swedish: "Kan du hjälpa mig?", grammar: "hjälpa = کمک کردن", pattern: "Kan du hjälpa mig + med...؟"},
+            {id: 52, type: "sentence", level: 3, category: "Help", farsi: "ببخشید، می‌شه یه سوال بپرسم؟", swedish: "Ursäkta, får jag ställa en fråga?", grammar: "ställa en fråga = سوال پرسیدن", pattern: "Får jag ställa en fråga?"},
+            {id: 53, type: "sentence", level: 3, category: "Help", farsi: "متوجه نمی‌شم.", swedish: "Jag förstår inte.", grammar: "förstår = متوجه شدن، فهمیدن", pattern: "Jag förstår (inte)"},
+            {id: 54, type: "sentence", level: 3, category: "Help", farsi: "می‌تونی دوباره بگی؟", swedish: "Kan du upprepa det?", grammar: "upprepa = تکرار کردن", pattern: "Kan du upprepa + اسم؟"},
+            {id: 55, type: "sentence", level: 3, category: "Help", farsi: "آهسته‌تر حرف بزن لطفا.", swedish: "Kan du prata långsammare?", grammar: "långsammare = آهسته‌تر", pattern: "Kan du prata långsammare?"},
+            {id: 56, type: "sentence", level: 3, category: "Help", farsi: "این یعنی چی؟", swedish: "Vad betyder det här?", grammar: "betyder = یعنی، معنی دادن", pattern: "Vad betyder + اسم؟"},
+            {id: 57, type: "sentence", level: 3, category: "Help", farsi: "می‌شه یه مثال بزنی؟", swedish: "Kan du ge ett exempel?", grammar: "ge ett exempel = مثال زدن", pattern: "Kan du ge ett exempel?"},
+            {id: 58, type: "sentence", level: 3, category: "Help", farsi: "به سوئدی چطوری میگن؟", swedish: "Hur säger man det på svenska?", grammar: "Hur säger man = چطوری می‌گویند (عمومی)", pattern: "Hur säger man + اسم + på svenska?"},
+            {id: 59, type: "sentence", level: 3, category: "Help", farsi: "می‌تونی بنویسیش؟", swedish: "Kan du skriva ner det?", grammar: "skriva ner = نوشتن (یادداشت کردن)", pattern: "Kan du skriva ner + اسم؟"},
+            {id: 60, type: "sentence", level: 3, category: "Help", farsi: "خیلی ممنون از کمکت.", swedish: "Tack så mycket för hjälpen.", grammar: "för hjälpen = برای کمک", pattern: "Tack för + اسم"},
+
+            // === WORK & PROFESSIONAL (20 items) ===
+            {id: 61, type: "sentence", level: 4, category: "Work", farsi: "ما یه جلسه داریم ساعت سه.", swedish: "Vi har ett möte klockan tre.", grammar: "möte = جلسه", pattern: "Vi har ett möte + زمان"},
+            {id: 62, type: "sentence", level: 4, category: "Work", farsi: "آیا این پروژه رو تموم کردی؟", swedish: "Har du gjort klart projektet?", grammar: "gjort klart = تمام کردن (perfekt)", pattern: "Har du gjort klart + اسم؟"},
+            {id: 63, type: "sentence", level: 4, category: "Work", farsi: "من باید این کار رو تا فردا بدم.", swedish: "Jag måste lämna in det här imorgon.", grammar: "lämna in = تحویل دادن", pattern: "måste lämna in + اسم"},
+            {id: 64, type: "sentence", level: 4, category: "Work", farsi: "می‌تونیم یه جلسه بذاریم؟", swedish: "Kan vi boka ett möte?", grammar: "boka = رزرو کردن، قرار گذاشتن", pattern: "Kan vi boka ett möte?"},
+            {id: 65, type: "sentence", level: 4, category: "Work", farsi: "من فردا دورکار هستم.", swedish: "Jag jobbar hemifrån imorgon.", grammar: "jobbar hemifrån = دورکار کردن", pattern: "Jag jobbar hemifrån"},
+            {id: 66, type: "sentence", level: 4, category: "Work", farsi: "این تا کی باید انجام بشه؟", swedish: "När ska det här vara klart?", grammar: "vara klart = آماده/تمام بودن", pattern: "När ska + اسم + vara klart?"},
+            {id: 67, type: "sentence", level: 4, category: "Work", farsi: "باید با مدیرم بررسی کنم.", swedish: "Jag måste kolla med min chef.", grammar: "kolla med = بررسی کردن با، چک کردن", pattern: "Jag måste kolla med + شخص"},
+            {id: 68, type: "sentence", level: 4, category: "Work", farsi: "می‌تونیم این رو بعدا بحث کنیم؟", swedish: "Kan vi diskutera det här senare?", grammar: "diskutera = بحث کردن", pattern: "Kan vi diskutera + اسم + senare?"},
+            {id: 69, type: "sentence", level: 4, category: "Work", farsi: "من یه ایمیل می‌فرستم.", swedish: "Jag skickar ett mejl.", grammar: "mejl = ایمیل (تلفظ غیررسمی)", pattern: "Jag skickar ett mejl"},
+            {id: 70, type: "sentence", level: 4, category: "Work", farsi: "باید یه ارائه آماده کنم.", swedish: "Jag måste förbereda en presentation.", grammar: "förbereda = آماده کردن", pattern: "Jag måste förbereda + اسم"},
+
+            // === DESCRIBING THINGS (15 items) ===
+            {id: 71, type: "sentence", level: 4, category: "Description", farsi: "این خیلی گرون بود.", swedish: "Det här var jättedyrt.", grammar: "jättedyrt = خیلی گرون", pattern: "Det var jätte + صفت"},
+            {id: 72, type: "sentence", level: 4, category: "Description", farsi: "اون خیلی خوبه!", swedish: "Den är superbra!", grammar: "superbra = فوق‌العاده خوب", pattern: "Den är super + صفت"},
+            {id: 73, type: "sentence", level: 4, category: "Description", farsi: "این کوچیکتر از اونیه.", swedish: "Den här är mindre än den där.", grammar: "mindre än = کوچکتر از (مقایسه)", pattern: "اسم + är + صفت تفضیلی + än"},
+            {id: 74, type: "sentence", level: 4, category: "Description", farsi: "این بهترین انتخابه.", swedish: "Det här är det bästa valet.", grammar: "det bästa = بهترین (عالی‌ترین)", pattern: "Det är det bästa + اسم"},
+            {id: 75, type: "sentence", level: 4, category: "Description", farsi: "این با اون یکسانه.", swedish: "Det här är samma sak.", grammar: "samma sak = همان چیز، یکسان", pattern: "Det är samma sak"},
+            {id: 76, type: "sentence", level: 4, category: "Description", farsi: "این بهم خیلی میاد!", swedish: "Det här passar mig jättebra!", grammar: "passar mig = بهم میاد، مناسبمه", pattern: "Det passar mig + قید"},
+            {id: 77, type: "sentence", level: 4, category: "Description", farsi: "این سخته.", swedish: "Det här är svårt.", grammar: "svårt = سخت", pattern: "Det är svårt"},
+            {id: 78, type: "sentence", level: 4, category: "Description", farsi: "این آسونه!", swedish: "Det här är lätt!", grammar: "lätt = آسان", pattern: "Det är lätt"},
+            {id: 79, type: "sentence", level: 4, category: "Description", farsi: "این جالبه.", swedish: "Det här är intressant.", grammar: "intressant = جالب", pattern: "Det är intressant"},
+            {id: 80, type: "sentence", level: 4, category: "Description", farsi: "این کسل‌کننده است.", swedish: "Det här är tråkigt.", grammar: "tråkigt = کسل‌کننده، خسته‌کننده", pattern: "Det är tråkigt"},
+
+            // === FEELINGS & EMOTIONS (15 items) ===
+            {id: 81, type: "sentence", level: 3, category: "Feelings", farsi: "من خیلی خوشحالم!", swedish: "Jag är jätteglad!", grammar: "jätteglad = خیلی خوشحال", pattern: "Jag är jätte + صفت"},
+            {id: 82, type: "sentence", level: 3, category: "Feelings", farsi: "احساس خستگی می‌کنم.", swedish: "Jag känner mig trött.", grammar: "känner mig = احساس می‌کنم", pattern: "Jag känner mig + صفت"},
+            {id: 83, type: "sentence", level: 3, category: "Feelings", farsi: "من نگرانم.", swedish: "Jag är orolig.", grammar: "orolig = نگران", pattern: "Jag är orolig"},
+            {id: 84, type: "sentence", level: 3, category: "Feelings", farsi: "این منو ناامید کرد.", swedish: "Jag blev besviken.", grammar: "blev besviken = ناامید شدن", pattern: "Jag blev + صفت"},
+            {id: 85, type: "sentence", level: 3, category: "Feelings", farsi: "واقعا هیجان‌زده‌ام!", swedish: "Jag är så exalterad!", grammar: "exalterad = هیجان‌زده", pattern: "Jag är så + صفت"},
+            {id: 86, type: "sentence", level: 3, category: "Feelings", farsi: "من استرس دارم.", swedish: "Jag är stressad.", grammar: "stressad = استرس داشتن", pattern: "Jag är stressad"},
+            {id: 87, type: "sentence", level: 3, category: "Feelings", farsi: "احساس تنهایی می‌کنم.", swedish: "Jag känner mig ensam.", grammar: "ensam = تنها", pattern: "Jag känner mig ensam"},
+            {id: 88, type: "sentence", level: 3, category: "Feelings", farsi: "این منو عصبانی کرد.", swedish: "Det gjorde mig arg.", grammar: "gjorde mig arg = عصبانی‌ام کرد", pattern: "Det gjorde mig + صفت"},
+            {id: 89, type: "sentence", level: 3, category: "Feelings", farsi: "احساس آرامش می‌کنم.", swedish: "Jag känner mig lugn.", grammar: "lugn = آرام", pattern: "Jag känner mig lugn"},
+            {id: 90, type: "sentence", level: 3, category: "Feelings", farsi: "خیلی دلم برات تنگ شده.", swedish: "Jag har saknat dig så mycket.", grammar: "har saknat = دلم تنگ شده (perfekt)", pattern: "Jag har saknat + اسم"},
+
+            // === PAST TENSE - TALKING ABOUT YESTERDAY (15 items) ===
+            {id: 91, type: "sentence", level: 4, category: "Past", farsi: "دیروز چیکار کردی؟", swedish: "Vad gjorde du igår?", grammar: "gjorde = کردی (گذشته ساده)", pattern: "Vad gjorde du + زمان؟"},
+            {id: 92, type: "sentence", level: 4, category: "Past", farsi: "من به سینما رفتم.", swedish: "Jag gick på bio.", grammar: "gick = رفتم (گذشته ساده)", pattern: "Jag gick + مکان"},
+            {id: 93, type: "sentence", level: 4, category: "Past", farsi: "یه فیلم خوب دیدم.", swedish: "Jag såg en bra film.", grammar: "såg = دیدم (گذشته ساده)", pattern: "Jag såg + اسم"},
+            {id: 94, type: "sentence", level: 4, category: "Past", farsi: "با دوستام ناهار خوردم.", swedish: "Jag åt lunch med mina vänner.", grammar: "åt = خوردم (گذشته ساده)", pattern: "Jag åt + اسم"},
+            {id: 95, type: "sentence", level: 4, category: "Past", farsi: "خیلی خوش گذشت!", swedish: "Det var jättekul!", grammar: "var = بود (گذشته)", pattern: "Det var jätte + صفت"},
+            {id: 96, type: "sentence", level: 4, category: "Past", farsi: "دیر به خونه رسیدم.", swedish: "Jag kom hem sent.", grammar: "kom = آمدم/رسیدم (گذشته)", pattern: "Jag kom + مکان + قید"},
+            {id: 97, type: "sentence", level: 4, category: "Past", farsi: "تمام شب مطالعه کردم.", swedish: "Jag pluggade hela kvällen.", grammar: "pluggade = مطالعه کردم (گذشته)", pattern: "Jag pluggade + زمان"},
+            {id: 98, type: "sentence", level: 4, category: "Past", farsi: "آخر هفته چیکار کردی؟", swedish: "Vad gjorde du i helgen?", grammar: "i helgen = آخر هفته (گذشته)", pattern: "Vad gjorde du i helgen?"},
+            {id: 99, type: "sentence", level: 4, category: "Past", farsi: "یه سفر کوتاه رفتم.", swedish: "Jag gjorde en kort resa.", grammar: "gjorde en resa = سفر کردم", pattern: "Jag gjorde en resa"},
+            {id: 100, type: "sentence", level: 4, category: "Past", farsi: "تمام روز استراحت کردم.", swedish: "Jag vilade hela dagen.", grammar: "vilade = استراحت کردم", pattern: "Jag vilade + زمان"},
+
+            // === FUTURE PLANS (10 items) ===
+            {id: 101, type: "sentence", level: 3, category: "Future", farsi: "فردا چیکار می‌خوای بکنی؟", swedish: "Vad ska du göra imorgon?", grammar: "ska + فعل = خواهم... (آینده)", pattern: "Vad ska du göra + زمان؟"},
+            {id: 102, type: "sentence", level: 3, category: "Future", farsi: "من می‌خوام خرید برم.", swedish: "Jag ska handla.", grammar: "ska handla = خرید خواهم رفت", pattern: "Jag ska + فعل"},
+            {id: 103, type: "sentence", level: 3, category: "Future", farsi: "تابستون کجا میری؟", swedish: "Vart ska du åka i sommar?", grammar: "i sommar = تابستون (امسال)", pattern: "Vart ska du åka + زمان؟"},
+            {id: 104, type: "sentence", level: 3, category: "Future", farsi: "من قراره مهمون بیاد.", swedish: "Jag ska få besök.", grammar: "få besök = مهمون داشتن", pattern: "Jag ska få besök"},
+            {id: 105, type: "sentence", level: 3, category: "Future", farsi: "امیدوارم باران نباره.", swedish: "Jag hoppas att det inte regnar.", grammar: "hoppas att = امیدوارم که", pattern: "Jag hoppas att + جمله"},
+            {id: 106, type: "sentence", level: 3, category: "Future", farsi: "احتمالا دیر میرسم.", swedish: "Jag kommer troligen att vara sen.", grammar: "kommer att = خواهم (رسمی‌تر)", pattern: "Jag kommer att + فعل"},
+            {id: 107, type: "sentence", level: 3, category: "Future", farsi: "آخر هفته چه برنامه‌ای داری؟", swedish: "Vad har du för planer i helgen?", grammar: "planer = برنامه‌ها", pattern: "Vad har du för planer?"},
+            {id: 108, type: "sentence", level: 3, category: "Future", farsi: "هنوز مطمئن نیستم.", swedish: "Jag är inte säker än.", grammar: "än = هنوز", pattern: "Jag är inte säker än"},
+            {id: 109, type: "sentence", level: 3, category: "Future", farsi: "بعدا بهت خبر میدم.", swedish: "Jag hör av mig senare.", grammar: "hör av mig = خبر می‌دهم", pattern: "Jag hör av mig + زمان"},
+            {id: 110, type: "sentence", level: 3, category: "Future", farsi: "سعی می‌کنم بیام.", swedish: "Jag ska försöka komma.", grammar: "försöka = سعی کردن", pattern: "Jag ska försöka + فعل"},
+
+            // === WEATHER & SEASONS (10 items) ===
+            {id: 111, type: "sentence", level: 3, category: "Weather", farsi: "هوا چطوره؟", swedish: "Hur är vädret?", grammar: "vädret = هوا", pattern: "Hur är vädret?"},
+            {id: 112, type: "sentence", level: 3, category: "Weather", farsi: "امروز آفتابیه.", swedish: "Det är soligt idag.", grammar: "soligt = آفتابی", pattern: "Det är soligt"},
+            {id: 113, type: "sentence", level: 3, category: "Weather", farsi: "داره بارون میاد.", swedish: "Det regnar.", grammar: "regnar = باران می‌آید (حال)", pattern: "Det regnar/snöar"},
+            {id: 114, type: "sentence", level: 3, category: "Weather", farsi: "امروز خیلی سرده.", swedish: "Det är jättekallt idag.", grammar: "kallt = سرد", pattern: "Det är jättekallt"},
+            {id: 115, type: "sentence", level: 3, category: "Weather", farsi: "تابستون گرمه.", swedish: "Det är varmt på sommaren.", grammar: "på sommaren = در تابستان", pattern: "Det är varmt på sommaren"},
+            {id: 116, type: "sentence", level: 3, category: "Weather", farsi: "من عاشق برف هستم!", swedish: "Jag älskar snö!", grammar: "älskar = عاشق هستم", pattern: "Jag älskar + اسم"},
+            {id: 117, type: "sentence", level: 3, category: "Weather", farsi: "فردا هوا بهتر میشه.", swedish: "Vädret blir bättre imorgon.", grammar: "blir bättre = بهتر می‌شود", pattern: "Vädret blir + صفت"},
+            {id: 118, type: "sentence", level: 3, category: "Weather", farsi: "امروز یه روز زیباییه!", swedish: "Det är en underbar dag idag!", grammar: "underbar = زیبا، فوق‌العاده", pattern: "Det är en underbar dag"},
+            {id: 119, type: "sentence", level: 3, category: "Weather", farsi: "بهتره چتر ببری.", swedish: "Du borde ta med ett paraply.", grammar: "borde = بهتره که (توصیه)", pattern: "Du borde + فعل"},
+            {id: 120, type: "sentence", level: 3, category: "Weather", farsi: "امروز ابریه.", swedish: "Det är molnigt idag.", grammar: "molnigt = ابری", pattern: "Det är molnigt"},
+
+            // === HEALTH & WELLBEING (10 items) ===
+            {id: 121, type: "sentence", level: 3, category: "Health", farsi: "حالم خوب نیست.", swedish: "Jag mår inte bra.", grammar: "mår = حال داشتن", pattern: "Jag mår (inte) bra"},
+            {id: 122, type: "sentence", level: 3, category: "Health", farsi: "سردرد دارم.", swedish: "Jag har ont i huvudet.", grammar: "har ont i = درد داشتن در", pattern: "Jag har ont i + قسمت بدن"},
+            {id: 123, type: "sentence", level: 3, category: "Health", farsi: "باید به دکتر برم.", swedish: "Jag måste gå till doktorn.", grammar: "gå till doktorn = به دکتر رفتن", pattern: "Jag måste gå till doktorn"},
+            {id: 124, type: "sentence", level: 3, category: "Health", farsi: "تب دارم.", swedish: "Jag har feber.", grammar: "feber = تب", pattern: "Jag har feber"},
+            {id: 125, type: "sentence", level: 3, category: "Health", farsi: "گلوم درد می‌کنه.", swedish: "Jag har ont i halsen.", grammar: "halsen = گلو", pattern: "Jag har ont i halsen"},
+            {id: 126, type: "sentence", level: 3, category: "Health", farsi: "امروز خوب نیستم کار نمیام.", swedish: "Jag är sjuk idag så jag stannar hemma.", grammar: "sjuk = مریض، stannar hemma = خانه می‌مانم", pattern: "Jag är sjuk så jag stannar hemma"},
+            {id: 127, type: "sentence", level: 3, category: "Health", farsi: "احتیاج به استراحت دارم.", swedish: "Jag behöver vila.", grammar: "behöver = احتیاج دارم", pattern: "Jag behöver + فعل"},
+            {id: 128, type: "sentence", level: 3, category: "Health", farsi: "الرژی دارم.", swedish: "Jag är allergisk.", grammar: "allergisk = الرژی داشتن", pattern: "Jag är allergisk mot + اسم"},
+            {id: 129, type: "sentence", level: 3, category: "Health", farsi: "امروز احساس بهتری دارم.", swedish: "Jag mår bättre idag.", grammar: "mår bättre = حالم بهتره", pattern: "Jag mår bättre"},
+            {id: 130, type: "sentence", level: 3, category: "Health", farsi: "باید قرص بخورم.", swedish: "Jag måste ta medicin.", grammar: "ta medicin = دارو خوردن", pattern: "Jag måste ta medicin"},
+
+            // === TRANSPORTATION (10 items) ===
+            {id: 131, type: "sentence", level: 3, category: "Transport", farsi: "چطوری میای؟", swedish: "Hur tar du dig hit?", grammar: "tar dig hit = میای اینجا", pattern: "Hur tar du dig + مکان؟"},
+            {id: 132, type: "sentence", level: 3, category: "Transport", farsi: "من با اتوبوس میام.", swedish: "Jag åker buss.", grammar: "åker + وسیله = با ... میام", pattern: "Jag åker + وسیله نقلیه"},
+            {id: 133, type: "sentence", level: 3, category: "Transport", farsi: "چقدر طول می‌کشه برسی؟", swedish: "Hur lång tid tar det?", grammar: "Hur lång tid = چقدر زمان", pattern: "Hur lång tid tar det?"},
+            {id: 134, type: "sentence", level: 3, category: "Transport", farsi: "حدودا بیست دقیقه.", swedish: "Ungefär tjugo minuter.", grammar: "Ungefär = حدودا، تقریبا", pattern: "Ungefär + زمان"},
+            {id: 135, type: "sentence", level: 3, category: "Transport", farsi: "کجا باید پیاده بشم؟", swedish: "Var ska jag gå av?", grammar: "gå av = پیاده شدن", pattern: "Var ska jag gå av?"},
+            {id: 136, type: "sentence", level: 3, category: "Transport", farsi: "ایستگاه بعدی.", swedish: "Nästa hållplats.", grammar: "hållplats = ایستگاه", pattern: "Nästa hållplats"},
+            {id: 137, type: "sentence", level: 3, category: "Transport", farsi: "باید عوض کنم؟", swedish: "Måste jag byta?", grammar: "byta = عوض کردن، تعویض", pattern: "Måste jag byta?"},
+            {id: 138, type: "sentence", level: 3, category: "Transport", farsi: "یه بلیط می‌خوام.", swedish: "Jag vill köpa en biljett.", grammar: "biljett = بلیط", pattern: "Jag vill köpa en biljett"},
+            {id: 139, type: "sentence", level: 3, category: "Transport", farsi: "این اتوبوس به مرکز میره؟", swedish: "Går den här bussen till centrum?", grammar: "Går = می‌رود (برای حمل‌ونقل)", pattern: "Går + وسیله + till + مکان؟"},
+            {id: 140, type: "sentence", level: 3, category: "Transport", farsi: "من پیاده میام.", swedish: "Jag går.", grammar: "går = پیاده می‌روم", pattern: "Jag går"},
+
+            // === HOBBIES & FREE TIME (10 items) ===
+            {id: 141, type: "sentence", level: 3, category: "Hobbies", farsi: "وقت آزادت چیکار می‌کنی؟", swedish: "Vad gör du på fritiden?", grammar: "på fritiden = در وقت آزاد", pattern: "Vad gör du på fritiden?"},
+            {id: 142, type: "sentence", level: 3, category: "Hobbies", farsi: "من دوست دارم کتاب بخونم.", swedish: "Jag tycker om att läsa.", grammar: "tycker om att = دوست دارم که", pattern: "Jag tycker om att + فعل"},
+            {id: 143, type: "sentence", level: 3, category: "Hobbies", farsi: "من دوچرخه‌سواری می‌کنم.", swedish: "Jag cyklar.", grammar: "cyklar = دوچرخه‌سواری می‌کنم", pattern: "Jag cyklar"},
+            {id: 144, type: "sentence", level: 3, category: "Hobbies", farsi: "فوتبال بازی می‌کنی؟", swedish: "Spelar du fotboll?", grammar: "spelar = بازی می‌کنم", pattern: "Spelar du + ورزش؟"},
+            {id: 145, type: "sentence", level: 3, category: "Hobbies", farsi: "من عاشق موسیقی هستم.", swedish: "Jag älskar musik.", grammar: "älskar = عاشق هستم", pattern: "Jag älskar + اسم"},
+            {id: 146, type: "sentence", level: 3, category: "Hobbies", farsi: "آخر هفته‌ها چیکار می‌کنی؟", swedish: "Vad brukar du göra på helgerna?", grammar: "på helgerna = آخر هفته‌ها", pattern: "Vad brukar du göra på helgerna?"},
+            {id: 147, type: "sentence", level: 3, category: "Hobbies", farsi: "من به باشگاه می‌رم.", swedish: "Jag går på gymmet.", grammar: "går på gymmet = به باشگاه رفتن", pattern: "Jag går på gymmet"},
+            {id: 148, type: "sentence", level: 3, category: "Hobbies", farsi: "دوست دارم آشپزی کنم.", swedish: "Jag gillar att laga mat.", grammar: "laga mat = آشپزی کردن", pattern: "Jag gillar att laga mat"},
+            {id: 149, type: "sentence", level: 3, category: "Hobbies", farsi: "تماشای فیلم دوست داری؟", swedish: "Tycker du om att se på film?", grammar: "se på film = فیلم دیدن", pattern: "Tycker du om att se på film?"},
+            {id: 150, type: "sentence", level: 3, category: "Hobbies", farsi: "من عکاسی می‌کنم.", swedish: "Jag fotograferar.", grammar: "fotograferar = عکاسی کردن", pattern: "Jag fotograferar"},
+
+            // === FAMILY & RELATIONSHIPS (10 items) ===
+            {id: 151, type: "sentence", level: 3, category: "Family", farsi: "تو خواهر و برادر داری؟", swedish: "Har du syskon?", grammar: "syskon = خواهر و برادر", pattern: "Har du syskon?"},
+            {id: 152, type: "sentence", level: 3, category: "Family", farsi: "من یه خواهر بزرگتر دارم.", swedish: "Jag har en äldre syster.", grammar: "äldre = بزرگتر", pattern: "Jag har en äldre/yngre + اسم"},
+            {id: 153, type: "sentence", level: 3, category: "Family", farsi: "والدینت کجا زندگی می‌کنن؟", swedish: "Var bor dina föräldrar?", grammar: "föräldrar = والدین", pattern: "Var bor dina föräldrar?"},
+            {id: 154, type: "sentence", level: 3, category: "Family", farsi: "من متاهلم.", swedish: "Jag är gift.", grammar: "gift = متاهل", pattern: "Jag är gift"},
+            {id: 155, type: "sentence", level: 3, category: "Family", farsi: "من بچه دارم.", swedish: "Jag har barn.", grammar: "barn = بچه (مفرد و جمع)", pattern: "Jag har barn"},
+            {id: 156, type: "sentence", level: 3, category: "Family", farsi: "خانوادم از ایران هستن.", swedish: "Min familj kommer från Iran.", grammar: "kommer från = از ... آمدن", pattern: "Min familj kommer från + کشور"},
+            {id: 157, type: "sentence", level: 3, category: "Family", farsi: "امسال عروسی داریم.", swedish: "Vi ska gifta oss i år.", grammar: "gifta oss = ازدواج کردن", pattern: "Vi ska gifta oss"},
+            {id: 158, type: "sentence", level: 3, category: "Family", farsi: "این شوهرمه / همسرمه.", swedish: "Det här är min man/fru.", grammar: "man = شوهر، fru = همسر", pattern: "Det här är min man/fru"},
+            {id: 159, type: "sentence", level: 3, category: "Family", farsi: "فرزندام دو سالشه.", swedish: "Mitt barn är två år.", grammar: "två år = دو ساله", pattern: "Mitt barn är X år"},
+            {id: 160, type: "sentence", level: 3, category: "Family", farsi: "با خانوادم خیلی نزدیکم.", swedish: "Jag står min familj nära.", grammar: "står nära = نزدیک بودن", pattern: "Jag står + شخص + nära"},
+
+            // === MAKING REQUESTS (10 items) ===
+            {id: 161, type: "sentence", level: 4, category: "Requests", farsi: "می‌شه پنجره رو باز کنی؟", swedish: "Kan du öppna fönstret?", grammar: "öppna = باز کردن", pattern: "Kan du öppna + اسم؟"},
+            {id: 162, type: "sentence", level: 4, category: "Requests", farsi: "لطفا صدارو کم کن.", swedish: "Kan du sänka volymen?", grammar: "sänka = کم کردن، volymen = صدا", pattern: "Kan du sänka + اسم؟"},
+            {id: 163, type: "sentence", level: 4, category: "Requests", farsi: "می‌شه نمک رو بدی؟", swedish: "Kan du skicka saltet?", grammar: "skicka = دادن (روی میز)", pattern: "Kan du skicka + اسم؟"},
+            {id: 164, type: "sentence", level: 4, category: "Requests", farsi: "می‌تونی منتظر بمونی؟", swedish: "Kan du vänta lite?", grammar: "vänta = منتظر ماندن", pattern: "Kan du vänta lite?"},
+            {id: 165, type: "sentence", level: 4, category: "Requests", farsi: "لطفا اینو برام برسون.", swedish: "Kan du lämna det här till mig?", grammar: "lämna till = رساندن به", pattern: "Kan du lämna + اسم + till mig?"},
+            {id: 166, type: "sentence", level: 4, category: "Requests", farsi: "می‌شه یه لطف ازت بخوام؟", swedish: "Kan jag be dig om en tjänst?", grammar: "be om en tjänst = لطف خواستن", pattern: "Kan jag be dig om en tjänst?"},
+            {id: 167, type: "sentence", level: 4, category: "Requests", farsi: "می‌تونی شماره‌تو بهم بدی؟", swedish: "Kan du ge mig ditt nummer?", grammar: "ge mig = به من دادن", pattern: "Kan du ge mig + اسم؟"},
+            {id: 168, type: "sentence", level: 4, category: "Requests", farsi: "لطفا یادم بنداز.", swedish: "Kan du påminna mig?", grammar: "påminna = یادآوری کردن", pattern: "Kan du påminna mig?"},
+            {id: 169, type: "sentence", level: 4, category: "Requests", farsi: "می‌تونی این رو چک کنی؟", swedish: "Kan du kolla det här?", grammar: "kolla = چک کردن، بررسی", pattern: "Kan du kolla + اسم؟"},
+            {id: 170, type: "sentence", level: 4, category: "Requests", farsi: "لطفا درو ببند.", swedish: "Kan du stänga dörren?", grammar: "stänga = بستن", pattern: "Kan du stänga + اسم؟"},
+
+            // === COMMON EXPRESSIONS (10 items) ===
+            {id: 171, type: "sentence", level: 4, category: "Expressions", farsi: "مشکلی نیست.", swedish: "Det gör inget.", grammar: "gör inget = مشکلی نیست (درجواب عذرخواهی)", pattern: "Det gör inget"},
+            {id: 172, type: "sentence", level: 4, category: "Expressions", farsi: "خیلی وقته ندیدمت!", swedish: "Länge sedan vi sågs!", grammar: "Länge sedan = خیلی وقته", pattern: "Länge sedan vi sågs"},
+            {id: 173, type: "sentence", level: 4, category: "Expressions", farsi: "منتظر بمون!", swedish: "Vänta lite!", grammar: "Vänta = صبر کن، منتظر بمان", pattern: "Vänta lite!"},
+            {id: 174, type: "sentence", level: 4, category: "Expressions", farsi: "عجله نکن.", swedish: "Ta det lugnt.", grammar: "Ta det lugnt = آروم باش، عجله نکن", pattern: "Ta det lugnt"},
+            {id: 175, type: "sentence", level: 4, category: "Expressions", farsi: "فهمیدم!", swedish: "Jag fattar!", grammar: "fattar = می‌فهمم (محاوره‌ای)", pattern: "Jag fattar"},
+            {id: 176, type: "sentence", level: 4, category: "Expressions", farsi: "اشتباه کردم.", swedish: "Jag hade fel.", grammar: "hade fel = اشتباه کردن", pattern: "Jag hade fel"},
+            {id: 177, type: "sentence", level: 4, category: "Expressions", farsi: "بستگی داره.", swedish: "Det beror på.", grammar: "beror på = بستگی دارد به", pattern: "Det beror på + اسم"},
+            {id: 178, type: "sentence", level: 4, category: "Expressions", farsi: "تقریبا.", swedish: "Ungefär.", grammar: "Ungefär = تقریبا، حدودا", pattern: "Ungefär"},
+            {id: 179, type: "sentence", level: 4, category: "Expressions", farsi: "هرچی باشه...", swedish: "Hur som helst...", grammar: "Hur som helst = به هر حال، هرچی باشه", pattern: "Hur som helst"},
+            {id: 180, type: "sentence", level: 4, category: "Expressions", farsi: "دقیقا!", swedish: "Precis!", grammar: "Precis = دقیقا، درست", pattern: "Precis!"},
+
+            // === DESCRIBING EXPERIENCES (10 items) ===
+            {id: 181, type: "sentence", level: 4, category: "Experience", farsi: "تا حالا به سوئد رفتی؟", swedish: "Har du varit i Sverige någonsin?", grammar: "någonsin = تا به حال (در سوال)", pattern: "Har du + supinum + någonsin?"},
+            {id: 182, type: "sentence", level: 4, category: "Experience", farsi: "من هرگز این کارو نکردم.", swedish: "Jag har aldrig gjort det.", grammar: "aldrig = هرگز", pattern: "Jag har aldrig + supinum"},
+            {id: 183, type: "sentence", level: 4, category: "Experience", farsi: "چندبار اونجا رفتی؟", swedish: "Hur många gånger har du varit där?", grammar: "Hur många gånger = چند بار", pattern: "Hur många gånger har du + supinum?"},
+            {id: 184, type: "sentence", level: 4, category: "Experience", farsi: "قبلا اینجا بودم.", swedish: "Jag har varit här förut.", grammar: "förut = قبلا", pattern: "Jag har varit här förut"},
+            {id: 185, type: "sentence", level: 4, category: "Experience", farsi: "اولین باره که می‌بینمش.", swedish: "Det är första gången jag ser det.", grammar: "första gången = اولین بار", pattern: "Det är första gången jag + فعل"},
+            {id: 186, type: "sentence", level: 4, category: "Experience", farsi: "چنبار خوردمش قبلا.", swedish: "Jag har ätit det flera gånger.", grammar: "flera gånger = چند بار", pattern: "Jag har + supinum + flera gånger"},
+            {id: 187, type: "sentence", level: 4, category: "Experience", farsi: "همیشه می‌خواستم این کارو بکنم.", swedish: "Jag har alltid velat göra det.", grammar: "alltid velat = همیشه می‌خواستم", pattern: "Jag har alltid velat + فعل"},
+            {id: 188, type: "sentence", level: 4, category: "Experience", farsi: "این بهترین تجربم بود!", swedish: "Det var min bästa upplevelse!", grammar: "upplevelse = تجربه", pattern: "Det var min bästa upplevelse"},
+            {id: 189, type: "sentence", level: 4, category: "Experience", farsi: "من اینو یاد گرفتم سال پیش.", swedish: "Jag lärde mig det förra året.", grammar: "förra året = سال پیش", pattern: "Jag lärde mig + اسم + förra året"},
+            {id: 190, type: "sentence", level: 4, category: "Experience", farsi: "تا حالا همچین چیزی ندیدم.", swedish: "Jag har aldrig sett något sådant.", grammar: "något sådant = چیز همچنینی", pattern: "Jag har aldrig sett något sådant"},
+
+            // === PHONE & COMMUNICATION (10 items) ===
+            {id: 191, type: "sentence", level: 4, category: "Communication", farsi: "می‌تونم باهاش صحبت کنم؟", swedish: "Kan jag prata med henne/honom?", grammar: "prata med = صحبت کردن با", pattern: "Kan jag prata med + شخص؟"},
+            {id: 192, type: "sentence", level: 4, category: "Communication", farsi: "یه لحظه لطفا.", swedish: "Ett ögonblick.", grammar: "Ett ögonblick = یک لحظه", pattern: "Ett ögonblick"},
+            {id: 193, type: "sentence", level: 4, category: "Communication", farsi: "بعدا زنگ می‌زنم.", swedish: "Jag ringer senare.", grammar: "ringer = زنگ می‌زنم", pattern: "Jag ringer senare"},
+            {id: 194, type: "sentence", level: 4, category: "Communication", farsi: "برات پیام می‌ذارم.", swedish: "Jag skickar ett meddelande.", grammar: "meddelande = پیام", pattern: "Jag skickar ett meddelande"},
+            {id: 195, type: "sentence", level: 4, category: "Communication", farsi: "اشتباه گرفتی.", swedish: "Du har fått fel nummer.", grammar: "fel nummer = شماره اشتباه", pattern: "Du har fått fel nummer"},
+            {id: 196, type: "sentence", level: 4, category: "Communication", farsi: "خط مشغوله.", swedish: "Det är upptaget.", grammar: "upptaget = مشغول (خط)", pattern: "Det är upptaget"},
+            {id: 197, type: "sentence", level: 4, category: "Communication", farsi: "صدام میاد؟", swedish: "Hör du mig?", grammar: "Hör du mig = منو می‌شنوی؟", pattern: "Hör du mig?"},
+            {id: 198, type: "sentence", level: 4, category: "Communication", farsi: "خط خیلی بده.", swedish: "Det är dålig uppkoppling.", grammar: "uppkoppling = اتصال، خط", pattern: "Det är dålig uppkoppling"},
+            {id: 199, type: "sentence", level: 4, category: "Communication", farsi: "بهت ایمیل می‌زنم.", swedish: "Jag mejlar dig.", grammar: "mejlar = ایمیل می‌زنم", pattern: "Jag mejlar dig"},
+            {id: 200, type: "sentence", level: 4, category: "Communication", farsi: "جواب پیامم رو بده.", swedish: "Svara på mitt meddelande.", grammar: "Svara på = جواب دادن", pattern: "Svara på + اسم"}
+        ];
+
+        function SwedishFarsiApp() {
+            const [cards, setCards] = useState([]);
+            const [currentCard, setCurrentCard] = useState(null);
+            const [showAnswer, setShowAnswer] = useState(false);
+            const [stats, setStats] = useState({
+                totalReviewed: 0,
+                todayReviewed: 0,
+                sessionReviewed: 0,
+                lastStudyDate: new Date().toISOString().split('T')[0]
+            });
+            const [view, setView] = useState('welcome');
+
+            useEffect(() => {
+                const savedCards = localStorage.getItem('swedishFarsiCards');
+                const savedStats = localStorage.getItem('swedishFarsiStats');
+
+                if (savedCards) {
+                    const parsed = JSON.parse(savedCards);
+                    parsed.forEach(card => {
+                        card.nextReview = new Date(card.nextReview);
+                    });
+                    setCards(parsed);
+                } else {
+                    const initialized = contentDatabase.map(item => ({
+                        ...item,
+                        nextReview: new Date(),
+                        interval: 0,
+                        easeFactor: 2.5,
+                        repetitions: 0,
+                        isNew: true
+                    }));
+                    setCards(initialized);
+                    localStorage.setItem('swedishFarsiCards', JSON.stringify(initialized));
+                }
+
+                if (savedStats) {
+                    const parsedStats = JSON.parse(savedStats);
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    if (parsedStats.lastStudyDate !== today) {
+                        parsedStats.todayReviewed = 0;
+                        parsedStats.sessionReviewed = 0;
+                        parsedStats.lastStudyDate = today;
+                    }
+                    setStats(parsedStats);
+                }
+            }, []);
+
+            useEffect(() => {
+                if (cards.length > 0) {
+                    localStorage.setItem('swedishFarsiCards', JSON.stringify(cards));
+                }
+            }, [cards]);
+
+            useEffect(() => {
+                localStorage.setItem('swedishFarsiStats', JSON.stringify(stats));
+            }, [stats]);
+
+            const getDueCards = () => {
+                const now = new Date();
+                return cards.filter(card => card.nextReview <= now && !card.isNew);
+            };
+
+            const getNewCards = () => {
+                return cards.filter(card => card.isNew).slice(0, 5);
+            };
+
+            const calculateNextReview = (card, quality) => {
+                let interval = card.interval;
+                let easeFactor = card.easeFactor;
+                let repetitions = card.repetitions;
+
+                if (quality >= 3) {
+                    if (repetitions === 0) {
+                        interval = 1;
+                    } else if (repetitions === 1) {
+                        interval = 6;
+                    } else {
+                        interval = Math.round(interval * easeFactor);
+                    }
+                    repetitions += 1;
+                } else {
+                    repetitions = 0;
+                    interval = 1;
+                }
+
+                easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+                easeFactor = Math.max(1.3, easeFactor);
+
+                const nextReview = new Date();
+                nextReview.setDate(nextReview.getDate() + interval);
+
+                return { interval, easeFactor, repetitions, nextReview, isNew: false };
+            };
+
+            const speakSwedish = (text, slow = false) => {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'sv-SE';
+                    utterance.rate = slow ? 0.5 : 0.9;
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(utterance);
+                }
+            };
+
+            const startReview = () => {
+                const dueCards = getDueCards();
+                const newCards = getNewCards();
+                const remaining = DAILY_GOAL - stats.sessionReviewed;
+                const availableCards = [...dueCards, ...newCards].slice(0, remaining);
+
+                if (availableCards.length > 0) {
+                    setCurrentCard(availableCards[0]);
+                    setShowAnswer(false);
+                    setView('review');
+                }
+            };
+
+            const handleRating = (difficulty) => {
+                if (!currentCard) return;
+
+                const qualityMap = { 'hard': 2, 'medium': 3, 'easy': 5 };
+                const quality = qualityMap[difficulty];
+                const updates = calculateNextReview(currentCard, quality);
+
+                setCards(prevCards =>
+                    prevCards.map(card =>
+                        card.id === currentCard.id ? { ...card, ...updates } : card
+                    )
+                );
+
+                setStats(prev => ({
+                    ...prev,
+                    totalReviewed: prev.totalReviewed + 1,
+                    todayReviewed: prev.todayReviewed + 1,
+                    sessionReviewed: prev.sessionReviewed + 1
+                }));
+
+                const dueCards = getDueCards();
+                const newCards = getNewCards();
+                const remaining = DAILY_GOAL - stats.sessionReviewed - 1;
+                const availableCards = [...dueCards, ...newCards]
+                    .filter(c => c.id !== currentCard.id)
+                    .slice(0, remaining);
+
+                if (availableCards.length > 0 && stats.sessionReviewed < DAILY_GOAL) {
+                    setCurrentCard(availableCards[0]);
+                    setShowAnswer(false);
+                } else {
+                    setCurrentCard(null);
+                    setView('completed');
+                }
+            };
+
+            const dueCount = getDueCards().length;
+            const newCount = getNewCards().length;
+
+            if (view === 'stats') {
+                const mastered = cards.filter(c => !c.isNew && c.repetitions >= 3).length;
+                const started = cards.filter(c => !c.isNew).length;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-8">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h1 className="text-3xl font-bold text-gray-800">📈 پیشرفت شما</h1>
+                                    <button
+                                        onClick={() => setView('welcome')}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                    >
+                                        ← بازگشت
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4 mb-8">
+                                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white text-center">
+                                        <div className="text-4xl font-bold mb-2">{stats.totalReviewed}</div>
+                                        <div className="text-blue-100">کل مرور شده</div>
+                                    </div>
+
+                                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white text-center">
+                                        <div className="text-4xl font-bold mb-2">{stats.todayReviewed}</div>
+                                        <div className="text-green-100">امروز</div>
+                                    </div>
+
+                                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white text-center">
+                                        <div className="text-4xl font-bold mb-2">{dueCount + newCount}</div>
+                                        <div className="text-purple-100">باقیمانده</div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-xl p-6">
+                                    <h3 className="text-xl font-semibold mb-4 text-gray-800">سطح یادگیری</h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                                <span>جملات تسلط یافته</span>
+                                                <span>{mastered} / {cards.length}</span>
+                                            </div>
+                                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-green-400 to-green-600"
+                                                    style={{ width: `${(mastered / cards.length) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                                <span>جملات شروع شده</span>
+                                                <span>{started} / {cards.length}</span>
+                                            </div>
+                                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-blue-400 to-blue-600"
+                                                    style={{ width: `${(started / cards.length) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (view === 'welcome' || view === 'completed') {
+                const isCompleted = view === 'completed';
+                const totalDue = dueCount + newCount;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h1 className="text-3xl font-bold text-gray-800">🇸🇪 یادگیری سوئدی</h1>
+                                        <p className="text-gray-600 mt-1">سطح متوسط به پیشرفته - 200 الگوی روزمره</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setView('stats')}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                    >
+                                        📊 آمار
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4 mb-4">
+                                    <div className="bg-blue-50 rounded-lg p-4 text-center">
+                                        <div className="text-2xl font-bold text-blue-600">{dueCount}</div>
+                                        <div className="text-sm text-gray-600">آماده مرور</div>
+                                    </div>
+                                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                                        <div className="text-2xl font-bold text-green-600">{newCount}</div>
+                                        <div className="text-sm text-gray-600">جملات جدید</div>
+                                    </div>
+                                    <div className="bg-purple-50 rounded-lg p-4 text-center">
+                                        <div className="text-2xl font-bold text-purple-600">
+                                            {stats.sessionReviewed}/{DAILY_GOAL}
+                                        </div>
+                                        <div className="text-sm text-gray-600">امروز</div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-lg p-4">
+                                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span>پیشرفت روزانه</span>
+                                        <span>{Math.round((stats.sessionReviewed / DAILY_GOAL) * 100)}%</span>
+                                    </div>
+                                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-indigo-400 to-purple-600 transition-all"
+                                            style={{ width: `${Math.min((stats.sessionReviewed / DAILY_GOAL) * 100, 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+                                <div className="text-6xl mb-4">{isCompleted ? '🎉' : '🇸🇪'}</div>
+                                <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                                    {isCompleted ? 'تمرین امروز تمام شد!' : 'خوش آمدید!'}
+                                </h2>
+                                <p className="text-gray-600 mb-6">
+                                    {isCompleted
+                                        ? `امروز ${stats.sessionReviewed} جمله را تمرین کردید. عالی!`
+                                        : totalDue > 0
+                                            ? `${totalDue} جمله آماده تمرین است.`
+                                            : 'همه جملات امروز را تمرین کردید!'}
+                                </p>
+                                {totalDue > 0 && (
+                                    <button
+                                        onClick={startReview}
+                                        className="px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition text-lg font-bold"
+                                    >
+                                        ▶ شروع تمرین
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (view === 'review' && currentCard) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-800">🇸🇪 یادگیری سوئدی</h1>
+                                        <div className="text-sm text-gray-600 mt-1">
+                                            {currentCard.category} • سطح {currentCard.level}
+                                        </div>
+                                    </div>
+                                    <div className="text-indigo-600 font-semibold">
+                                        {stats.sessionReviewed}/{DAILY_GOAL}
+                                    </div>
+                                </div>
+                                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-indigo-600 transition-all"
+                                        style={{ width: `${(stats.sessionReviewed / DAILY_GOAL) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-8">
+                                <div className="space-y-6">
+                                    <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-8 text-white min-h-[300px] flex flex-col justify-center">
+                                        <div className="text-center">
+                                            <div className="text-sm opacity-80 mb-3">این رو به سوئدی بگو:</div>
+                                            <div className="text-3xl font-bold mb-8">{currentCard.farsi}</div>
+                                            
+                                            {showAnswer && (
+                                                <>
+                                                    <div className="border-t border-white/30 my-6"></div>
+                                                    <div className="text-sm opacity-80 mb-3">به سوئدی:</div>
+                                                    <div className="text-3xl font-bold ltr-text mb-6">{currentCard.swedish}</div>
+                                                    
+                                                    <div className="bg-white/10 rounded-lg p-4 mb-4 text-right">
+                                                        <div className="text-sm font-semibold mb-2">📚 نکته گرامری:</div>
+                                                        <div className="text-sm leading-relaxed">{currentCard.grammar}</div>
+                                                    </div>
+
+                                                    {currentCard.words && (
+                                                        <div className="bg-white/10 rounded-lg p-4 mb-4">
+                                                            <div className="text-sm font-semibold mb-3 text-right">🔤 ترجمه کلمه به کلمه:</div>
+                                                            <div className="flex flex-wrap gap-2 justify-center">
+                                                                {currentCard.words.map((word, idx) => (
+                                                                    <div key={idx} className="bg-white/20 rounded-lg px-3 py-2 text-center">
+                                                                        <div className="text-white font-semibold ltr-text text-sm">{word.s}</div>
+                                                                        <div className="text-xs text-white/80 mt-1">{word.f}</div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {currentCard.pattern && (
+                                                        <div className="bg-white/10 rounded-lg p-4 mb-4 text-right">
+                                                            <div className="text-sm font-semibold mb-2">🔄 الگو:</div>
+                                                            <div className="text-sm ltr-text">{currentCard.pattern}</div>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className="flex gap-3 justify-center mt-6">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                speakSwedish(currentCard.swedish, false);
+                                                            }}
+                                                            className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition"
+                                                        >
+                                                            🔊 سرعت عادی
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                speakSwedish(currentCard.swedish, true);
+                                                            }}
+                                                            className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition"
+                                                        >
+                                                            🔊 آهسته
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    {!showAnswer && (
+                                        <button
+                                            onClick={() => setShowAnswer(true)}
+                                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition text-lg font-semibold"
+                                        >
+                                            نمایش جواب و توضیحات
+                                        </button>
+                                    )}
+
+                                    {showAnswer && (
+                                        <div className="mt-6">
+                                            <div className="text-center text-gray-600 mb-4 font-medium">
+                                                چقدر این جمله رو بلد بودی؟
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <button
+                                                    onClick={() => handleRating('hard')}
+                                                    className="bg-red-50 hover:bg-red-100 text-red-700 py-4 rounded-xl font-semibold transition"
+                                                >
+                                                    سخت بود
+                                                    <div className="text-xs text-red-600 mt-1">مرور زود</div>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRating('medium')}
+                                                    className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 py-4 rounded-xl font-semibold transition"
+                                                >
+                                                    متوسط
+                                                    <div className="text-xs text-yellow-600 mt-1">مرور در چند روز</div>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRating('easy')}
+                                                    className="bg-green-50 hover:bg-green-100 text-green-700 py-4 rounded-xl font-semibold transition"
+                                                >
+                                                    آسون بود
+                                                    <div className="text-xs text-green-600 mt-1">مرور بعدی</div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        }
+
+        ReactDOM.render(<SwedishFarsiApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
